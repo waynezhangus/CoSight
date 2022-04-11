@@ -16,7 +16,7 @@ app.use(morgan('tiny'))
 
 // Routes
 app.use('/api/users', require('./routes/userRoutes'))
-app.use('/api/docs', require('./routes/docRoutes'))
+app.use('/api/youtube', require('./routes/docRoutes'))
 
 // Serve Frontend
 if (process.env.NODE_ENV === 'production') {
@@ -29,7 +29,7 @@ if (process.env.NODE_ENV === 'production') {
   })
 } else {
   app.get('/', (req, res) => {
-    res.status(200).json({ message: 'Welcome to the Pomodoc API' })
+    res.status(200).json({ message: 'Welcome to the Cosight API' })
   })
 }
 

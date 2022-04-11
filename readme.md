@@ -1,4 +1,4 @@
-## POMODOC
+## CoSight
 
 ### Install backend dependencies
 
@@ -19,10 +19,4 @@ npm install
 PORT = 5000
 MONGODB_URL = ...
 TOKEN_SECRET = ...
-```
-
-### Run app in development (frontend & backend)
-
-```bash
-npm run dev
 ```

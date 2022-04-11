@@ -8,12 +8,12 @@ const User = require('../models/userModel')
 // @route   POST /api/users
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body
+  const { name, email, password, category } = req.body
 
   // Validation
-  if (!name || !email || !password) {
+  if (!email || !category) {
     res.status(400)
-    throw new Error('Please include all fields')
+    throw new Error('More information needed')
   }
   const userExists = await User.findOne({ email })
   if (userExists) {
@@ -27,15 +27,15 @@ const registerUser = asyncHandler(async (req, res) => {
     name,
     email,
     password: hashedPassword,
+    category,
   })
   if (user) {
-    const {
-      _id, name, email, focusDuration, breakDuration, readingSpeed,
-      isDark, pdfAnno, pdfPanel, pdfPage,
-    } = user
+    const { _id, name, email, category } = user
     res.status(201).json({
-      _id, name, email, focusDuration, breakDuration, readingSpeed,
-      isDark, pdfAnno, pdfPanel, pdfPage,
+      _id,
+      name,
+      email,
+      category,
       token: generateToken(_id),
     })
   } else {
@@ -53,13 +53,12 @@ const loginUser = asyncHandler(async (req, res) => {
   //Validation
   const user = await User.findOne({ email })
   if (user && (await bcrypt.compare(password, user.password))) {
-    const {
-      _id, name, email, focusDuration, breakDuration, readingSpeed,
-      isDark, pdfAnno, pdfPanel, pdfPage,
-    } = user
+    const { _id, name, email, category } = user
     res.status(200).json({
-      _id, name, email, focusDuration, breakDuration, readingSpeed,
-      isDark, pdfAnno, pdfPanel, pdfPage,
+      _id,
+      name,
+      email,
+      category,
       token: generateToken(_id),
     })
   } else {
@@ -71,11 +70,9 @@ const loginUser = asyncHandler(async (req, res) => {
 // @route   POST /api/users/update
 // @access  Private
 const updateUser = asyncHandler(async (req, res) => {
-  const updatedUser = await User.findByIdAndUpdate(
-    req.user.id,
-    req.body,
-    { new: true }
-  )
+  const updatedUser = await User.findByIdAndUpdate(req.user.id, req.body, {
+    new: true,
+  })
   res.status(200).json(updatedUser)
 })
 

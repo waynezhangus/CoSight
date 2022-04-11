@@ -9,6 +9,6 @@ router.post('/', userCtrl.registerUser)
 // Login User
 router.post('/login', userCtrl.loginUser)
 // Update user
-router.patch('/update', protect, userCtrl.updateUser)
+router.patch('/update', userCtrl.updateUser)
 
 module.exports = router
