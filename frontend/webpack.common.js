@@ -5,10 +5,10 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
   entry: {
-    popup: path.resolve('src/popup/popup.tsx'),
-    options: path.resolve('src/options/options.tsx'),
-    background: path.resolve('src/background/background.ts'),
-    content: path.resolve('src/content/content.ts'),
+    popup: path.resolve('src/popup/index.tsx'),
+    options: path.resolve('src/options/index.tsx'),
+    background: path.resolve('src/background/store.ts'),
+    content: path.resolve('src/content/index.ts'),
   },
   module: {
     rules: [
@@ -42,7 +42,7 @@ module.exports = {
         }
       ]
     }),
-    ...getHtmlPlugins([
+    ...generateHtmlPlugins([
       'popup',
       'options'
     ]),
@@ -60,7 +60,7 @@ module.exports = {
   }
 }
 
-function getHtmlPlugins(chunks) {
+function generateHtmlPlugins(chunks) {
   return chunks.map(chunk => new HtmlPlugin({
     title: 'CoSight',
     filename: `${chunk}.html`,
