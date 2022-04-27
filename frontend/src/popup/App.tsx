@@ -1,20 +1,23 @@
 import React from 'react'
-import { useAppSelector, useAppDispatch } from '../background/hooks'
-import { update } from '../background/optSlice'
-
-import Box from '@mui/material/Box'
-import Container from '@mui/material/Container'
+import { connect, ConnectedProps } from 'react-redux'
+import { test } from '../background/optSlice'
+import type { RootState } from '../background/store'
 
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Button from '@mui/material/Button'
+import Box from '@mui/material/Box'
+import Container from '@mui/material/Container'
 
-export default function App ({ store })
+const mapState = (state: RootState) => ({ options: state.opt })
+const connector = connect(mapState)
+type PropsRedux = ConnectedProps<typeof connector>
+interface Props extends PropsRedux {}
+
+function App ({ options, dispatch }: Props)
 {
-  const dispatch = useAppDispatch()
-
   const onClick = async (e) => {
-
+    
   }
 
   return (
@@ -38,3 +41,5 @@ export default function App ({ store })
     </Container>
   )
 }
+
+export default connector(App)

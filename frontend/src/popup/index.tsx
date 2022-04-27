@@ -19,7 +19,7 @@ store.ready().then(() => {
       <Provider store={store}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <App store={store} />
+          <App />
         </ThemeProvider>
       </Provider>
     </React.StrictMode>
