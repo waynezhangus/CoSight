@@ -7,7 +7,7 @@ module.exports = {
   entry: {
     popup: path.resolve('src/popup/index.tsx'),
     options: path.resolve('src/options/index.tsx'),
-    background: path.resolve('src/background/store.ts'),
+    background: path.resolve('src/background/index.ts'),
     content: path.resolve('src/content/index.ts'),
   },
   module: {

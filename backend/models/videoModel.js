@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const docSchema = mongoose.Schema(
+const videoSchema = mongoose.Schema(
   {
     videoId: { type: String, required: true },
     ccKeywords: [
@@ -9,19 +9,20 @@ const docSchema = mongoose.Schema(
         timestamps: [String],
       },
     ],
+    // the comments with timestamps
     comments: [
       {
         text: String,
         likeCount: Number,
-        keywords: [String],
         timestamps: [String],
+        keywords: [String],
       },
     ],
     blackRanges: [
       {
         start: Number,
         end: Number,
-        hasVisited: Boolean,
+        score: Number,
       },
     ],
     status: {
@@ -35,4 +36,4 @@ const docSchema = mongoose.Schema(
   }
 )
 
-module.exports = mongoose.model('Doc', docSchema)
+module.exports = mongoose.model('Video', videoSchema)

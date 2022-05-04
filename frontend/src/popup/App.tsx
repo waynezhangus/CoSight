@@ -1,7 +1,5 @@
-import React from 'react'
-import { connect, ConnectedProps } from 'react-redux'
-import { test } from '../background/optSlice'
-import type { RootState } from '../background/store'
+import * as React from 'react'
+import axios from 'axios'
 
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
@@ -9,16 +7,9 @@ import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
 import Container from '@mui/material/Container'
 
-const mapState = (state: RootState) => ({ options: state.opt })
-const connector = connect(mapState)
-type PropsRedux = ConnectedProps<typeof connector>
-interface Props extends PropsRedux {}
-
-function App ({ options, dispatch }: Props)
+export default function App()
 {
-  const onClick = async (e) => {
-    
-  }
+  const onClick = () => {}
 
   return (
     <Container component="main" maxWidth="xs">
@@ -41,5 +32,3 @@ function App ({ options, dispatch }: Props)
     </Container>
   )
 }
-
-export default connector(App)

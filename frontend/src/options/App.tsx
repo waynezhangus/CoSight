@@ -1,7 +1,4 @@
-import * as React from "react"
-import { connect, ConnectedProps } from 'react-redux'
-import { update } from '../background/optSlice'
-import type { RootState } from '../background/store'
+import * as React from 'react'
 import Header from './Header'
 import Footer from './Footer'
 // MUI Components
@@ -20,12 +17,7 @@ import Typography from '@mui/material/Typography'
 // MUI Icons
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
-const mapState = (state: RootState) => ({ options: state.opt })
-const connector = connect(mapState)
-type PropsRedux = ConnectedProps<typeof connector>
-interface Props extends PropsRedux {}
-
-function App ({ options, dispatch }: Props)
+export default function App()
 {
   const [expanded, setExpanded] = React.useState<string | boolean>(false)
   
@@ -35,7 +27,7 @@ function App ({ options, dispatch }: Props)
 
   const onSwitch = e => {
     const {name, checked} = e.target
-    dispatch(update({ [name]: checked }))
+
   }
 
   return (
@@ -49,8 +41,8 @@ function App ({ options, dispatch }: Props)
           <AccordionDetails>
             <FormGroup sx={{ pl: 1.2, flexDirection: 'row' }}>
               <FormControlLabel
-                control={<Switch name='mode' checked={options.mode} onChange={onSwitch} />} 
-                label={options.mode ? 'Accessibility mode' : 'Regular mode'} 
+                control={<Switch name='mode' checked onChange={onSwitch} />} 
+                label={true ? 'Accessibility mode' : 'Regular mode'} 
               />
               
             </FormGroup>
@@ -77,5 +69,3 @@ function App ({ options, dispatch }: Props)
     </>
   )
 }
-
-export default connector(App)

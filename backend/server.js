@@ -16,7 +16,7 @@ app.use(morgan('tiny'))
 
 // Routes
 app.use('/api/users', require('./routes/userRoutes'))
-app.use('/api/youtube', require('./routes/docRoutes'))
+app.use('/api/youtube', require('./routes/youtubeRoutes'))
 
 // Serve Frontend
 if (process.env.NODE_ENV === 'production') {
