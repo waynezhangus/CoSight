@@ -3,12 +3,6 @@ import {
   addVideo,
 } from '../background/api' 
 
-domReady(() => {
-  getVideo('wezZVZXFO3U').then((video) => {
-    console.log(video)
-  })
-})
-
 function domReady(callback) {
   if (document.readyState === "complete") {
     callback()
@@ -18,6 +12,37 @@ function domReady(callback) {
     })
   }
 }
+
+// Get the id of a Youtube video
+var index = location.href.indexOf('=');
+const video_id = location.href.substr(index+1, 11);
+
+
+
+// domReady(() => {
+//   getVideo(video_id).then((video) => {
+//     ccKeywords = video.ccKeywords;
+//     commentsWithTimestamps = video.comments;
+//     blackRanges = video.blackRanges;
+//     console.log(video);
+//   })
+// })
+
+
+getVideo(video_id).then((video) => {
+  let ccKeywords = video.ccKeywords;
+  let commentsWithTimestamps = video.comments;
+  let newBlackRanges = [];
+  
+  for (let i = 0; i < video.blackRanges.length; i++) {
+    if (video.blackRanges[i].score > 0.5)
+      newBlackRanges.push({start: Math.trunc(video.blackRanges[i].start), end: Math.trunc(video.blackRanges[i].end), score: video.blackRanges[i].score, hasVisited: false})
+  }
+
+let commentsToDisplay = commentsWithTimestamps.slice(0, 5);
+
+console.log("commentsToDisplay");
+console.log(commentsToDisplay);
 
 function waitFor(selector: string, callback, timeout?: number) {
   const element = document.querySelector(selector);
@@ -63,15 +88,12 @@ function waitForPromise(selector: string, parent: Element) {
 // import { text_on_screen_keywords } from "./constants";
 // import { timeRangeArr } from "./constants";
 
-// Get the id of a Youtube video
-var index = location.href.indexOf('=');
-const video_id = location.href.substr(index+1, 11);
 
-const response = async() => {
-  await getVideo(video_id);
-};
+// const response = async() => {
+//   await getVideo(video_id);
+// };
 
-console.log(response);
+// console.log(response);
 
 // var captions = [];
 
@@ -82,10 +104,7 @@ console.log(response);
 // var commentObjects = [];
 
 
-var commentsWithTimestamps;
-var commentsToDisplay = commentsWithTimestamps.slice(0, 5);
 
-const blackRanges = [];
 
 /*
 scrapeAllComments(commentObjects, video_id).then(() => {
@@ -96,7 +115,7 @@ scrapeAllComments(commentObjects, video_id).then(() => {
 })
 */
 
-let ccKeywords = [];
+
 
 /*
 // Get keywords using IBM's api
@@ -150,7 +169,7 @@ var videoContainer = document.getElementsByClassName("html5-video-container")[0]
 var floatCard;
 floatCard = document.createElement("DIV"); 
 floatCard.id = "float-card";
-floatCard.setAttribute('style', 'position: absolute; z-index: 2; height: 12em; width: 15%; margin-top: 45%; margin-left: 3%; padding-right: 1%; padding-left: 1%; background-color: #E5E5E5; border-radius: 0.5em;');
+floatCard.setAttribute('style', 'position: absolute; z-index: 2; height: 9em; width: 15%; margin-top: 45%; margin-left: 3%; padding-right: 1%; padding-left: 1%; background-color: #E5E5E5; border-radius: 0.5em;');
 // floatCard.class = 'overlay';             
 floatCard.innerHTML = `<p style="color: #000000; margin-left: 8%; margin-top: 10%;">Write a quick comment on <br> what you see to help people!</p>
 <p style="color: #000000; margin-left: 8%; margin-top: 8%;" id="source-text"></p>
@@ -200,16 +219,16 @@ const callback = function(mutationsList, observer) {
               //   timeStampArr = timeStampArr2;
               // }
               // console.log(timeStampArr);
-              for (let i in blackRanges) {
+              for (let i in newBlackRanges) {
                 // EDGE CASE: one segment follows another but they have different types
                 // progressBar["style"].transform.substring(7)
-                if (parseInt(progressBar['ariaValueNow']) >= blackRanges[i].start &&
-                  parseInt(progressBar['ariaValueNow']) <= blackRanges[i].end) {
-                    if (parseInt(progressBar['ariaValueNow']) == blackRanges[i].end) {
+                if (parseInt(progressBar['ariaValueNow']) >= newBlackRanges[i].start &&
+                  parseInt(progressBar['ariaValueNow']) <= newBlackRanges[i].end) {
+                    if (parseInt(progressBar['ariaValueNow']) == newBlackRanges[i].end) {
                       // console.log(timeRangeArr[i].hasVisited);
-                      if (blackRanges[i].hasVisited == false) {
+                      if (newBlackRanges[i].hasVisited == false) {
                         console.log("HEYYY!");
-                        blackRanges[i].hasVisited = true;
+                        newBlackRanges[i].hasVisited = true;
                         var audio = new Audio(
                           'https://media.geeksforgeeks.org/wp-content/uploads/20190531135120/beep.mp3');
                         audio.play();
@@ -223,30 +242,30 @@ const callback = function(mutationsList, observer) {
 
                         for (let j in commentsWithTimestamps) {
                           const timestamp_second = convertToSecond(commentsWithTimestamps[j].timestamps[0]);
-                          if (timestamp_second >= blackRanges[i].start && timestamp_second <= blackRanges[i].end) {
+                          if (timestamp_second >= newBlackRanges[i].start && timestamp_second <= newBlackRanges[i].end) {
                             commentsToRead.push(commentsWithTimestamps[j])
                           }
                         }
 
                         // commentToRead : # of keywords
-                        var dict: any = {};
+                        // var dict: any = {};
 
-                        for (let x in commentsToRead) {
-                          var numOfKeywords = 0;
-                          // for (let y in text_on_screen_keywords) {
-                          //   if (commentsToRead[x].text.includes(text_on_screen_keywords[y])) {
-                          //     numOfKeywords += 1;
-                          //   }
-                          // }
-                          dict[commentsToRead[x]] = numOfKeywords;
-                        }
+                        // for (let x in commentsToRead) {
+                        //   var numOfKeywords = 0;
+                        //   // for (let y in text_on_screen_keywords) {
+                        //   //   if (commentsToRead[x].text.includes(text_on_screen_keywords[y])) {
+                        //   //     numOfKeywords += 1;
+                        //   //   }
+                        //   // }
+                        //   dict[commentsToRead[x]] = numOfKeywords;
+                        // }
 
-                        var sorted_dict: any = sort_object(dict);
+                        // var sorted_dict: any = sort_object(dict);
 
-                        var sorted_commentsToRead = sorted_dict.keys;
+                        // var sorted_commentsToRead = sorted_dict.keys;
 
                         console.log("COMMENTS TO READ")
-                        console.log(sorted_commentsToRead)
+                        // console.log(sorted_commentsToRead)
 
                         var comment_index = 0
 
@@ -254,19 +273,19 @@ const callback = function(mutationsList, observer) {
                           // evt = evt || window.event;
                           if (evt.shiftKey) {
                               // alert("Ctrl-Z");
-                              if (comment_index == sorted_commentsToRead.length) {
+                              if (comment_index == commentsToRead.length) {
                                 var msg1 = new SpeechSynthesisUtterance();
                                 msg1.text = "Those are all the comments!";
                                 window.speechSynthesis.speak(msg1);
                                 return;
                               }
-                              if (comment_index > sorted_commentsToRead.length) {
+                              if (comment_index > commentsToRead.length) {
                                 return;
                               }
                               var msg2 = new SpeechSynthesisUtterance();
                               console.log("TO READ");
-                              console.log(sorted_commentsToRead[comment_index].text);
-                              msg2.text = sorted_commentsToRead[comment_index].text;
+                              console.log(commentsToRead[comment_index].text);
+                              msg2.text = commentsToRead[comment_index].text;
                               window.speechSynthesis.speak(msg2);
                               comment_index += 1
 
@@ -460,7 +479,7 @@ let observer = new MutationObserver((mutations) => {
                       comment.textContent = convertToMinSecond(ccKeywords[i]["timestamps"][j]) + " " + comment.textContent;
                       const youtubeVideo = <HTMLVideoElement>document.getElementsByTagName("Video")[0];
                       window.scrollTo(0, 0);
-                      youtubeVideo.currentTime = ccKeywords[i]["timestamps"][j];
+                      youtubeVideo.currentTime = parseFloat(ccKeywords[i]["timestamps"][j]);
                       youtubeVideo.play();
                     }
                     document.getElementById("timestamps").appendChild(timestamp);
@@ -598,3 +617,6 @@ let observer = new MutationObserver((mutations) => {
     , attributes: true 
     , characterData: false
   })
+
+
+});
