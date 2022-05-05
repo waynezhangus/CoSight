@@ -1,3 +1,14 @@
+import {
+  getVideo,
+  addVideo,
+} from '../background/api' 
+
+domReady(() => {
+  getVideo('wezZVZXFO3U').then((video) => {
+    console.log(video)
+  })
+})
+
 function domReady(callback) {
   if (document.readyState === "complete") {
     callback()
@@ -51,7 +62,6 @@ function waitForPromise(selector: string, parent: Element) {
 // import { timeRangeType } from "./timeRange";
 // import { text_on_screen_keywords } from "./constants";
 // import { timeRangeArr } from "./constants";
-import { getVideo } from "../background/api";
 
 // Get the id of a Youtube video
 var index = location.href.indexOf('=');

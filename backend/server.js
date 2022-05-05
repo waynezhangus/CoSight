@@ -5,6 +5,7 @@ const morgan = require('morgan')
 const dotenv = require('dotenv').config()
 const { errorHandler } = require('./middleware/errorMid')
 const connectDB = require('./config/db')
+const cors = require('cors')
 const PORT = process.env.PORT ?? 5000
 
 connectDB()
@@ -13,6 +14,10 @@ const app = express()
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(morgan('tiny'))
+app.use(cors({
+  origin: 'https://www.youtube.com',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+}))
 
 // Routes
 app.use('/api/users', require('./routes/userRoutes'))
