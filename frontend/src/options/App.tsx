@@ -1,6 +1,11 @@
 import * as React from 'react'
 import Header from './Header'
 import Footer from './Footer'
+import {
+  getStoredOptions,
+  setStoredOptions,
+  LocalStorageOptions,
+} from '../background/storage'
 // MUI Components
 import Accordion from '@mui/material/Accordion'
 import AccordionDetails from '@mui/material/AccordionDetails'
@@ -10,16 +15,22 @@ import Button from '@mui/material/Button'
 import Container from '@mui/material/Container'
 import FormGroup from '@mui/material/FormGroup'
 import FormControlLabel from '@mui/material/FormControlLabel'
-import Grid from '@mui/material/Grid'
 import Switch from '@mui/material/Switch'
-import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 // MUI Icons
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
+type FormState = 'ready' | 'saving'
+
 export default function App()
 {
+  const [options, setOptions] = React.useState<LocalStorageOptions | null>(null)
+  const [formState, setFormState] = React.useState<FormState>('ready')
   const [expanded, setExpanded] = React.useState<string | boolean>(false)
+
+  React.useEffect(() => {
+    getStoredOptions().then((options) => setOptions(options))
+  }, [])
   
   const handleChange = (panel) => (_, isExpanded) => {
     setExpanded(isExpanded ? panel : false);
@@ -27,8 +38,23 @@ export default function App()
 
   const onSwitch = e => {
     const {name, checked} = e.target
-
+    setOptions({...options, [name]:checked})
   }
+
+  const onSave = () => {
+    setFormState('saving')
+    setStoredOptions(options).then(() => {
+      setTimeout(() => {
+        setFormState('ready')
+      }, 1000)
+    })
+  }
+
+  if (!options) {
+    return null
+  }
+
+  const isFieldsDisabled = formState === 'saving'
 
   return (
     <>
@@ -42,7 +68,7 @@ export default function App()
             <FormGroup sx={{ pl: 1.2, flexDirection: 'row' }}>
               <FormControlLabel
                 control={<Switch name='mode' checked onChange={onSwitch} />} 
-                label={true ? 'Accessibility mode' : 'Regular mode'} 
+                label={options.mode ? 'Accessibility mode' : 'Regular mode'} 
               />
               
             </FormGroup>
@@ -64,6 +90,15 @@ export default function App()
             
           </AccordionDetails>
         </Accordion>
+        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+          <Button 
+            variant="contained"
+            onClick={onSave}
+            disabled={isFieldsDisabled}
+          >
+            {formState === 'ready' ? 'Save' : 'Saving...'}
+          </Button>
+        </Box>
       </Container>
       <Footer/>
     </>

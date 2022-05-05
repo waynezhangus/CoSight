@@ -12,13 +12,13 @@ var getSubtitles = require('youtube-captions-scraper').getSubtitles;
 const addVideo = asyncHandler( async (req, res) => {
 
   // get video id from the request body
-  const { videoID } = req.body
+  const { videoId } = req.body
 
   // =================== Captions ===================
 
   // scrape captions
   const captions = await getSubtitles({
-    videoID: videoID, // youtube video id
+    videoID: videoId, // youtube video id
   });
 
   // concatenate captions into one caption string
@@ -72,13 +72,13 @@ const addVideo = asyncHandler( async (req, res) => {
 
   // TO SOLVE LATER: right now it seems that the API is only extracting comments that were left after a certain time
 
-  await scrapeAllComments(commentObjects, videoID);
+  await scrapeAllComments(commentObjects, videoId);
   var commentsWithTimestamps = getCommentsWithTimestamps(commentObjects);
   console.log("comments scraped")
 
   // =================== Save to database ===================
   const video = Video({
-    videoId: videoID,
+    videoId: videoId,
     ccKeywords: transcript_keywords,
     comments: commentsWithTimestamps,
     blackRanges, 
@@ -87,7 +87,7 @@ const addVideo = asyncHandler( async (req, res) => {
 
   await video.save()
   console.log("saved")
-  res.status(200).json("done");
+  res.status(201).json(video);
 })
 
 // @desc    Get one video info
