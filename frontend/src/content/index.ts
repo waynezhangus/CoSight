@@ -1,3 +1,13 @@
+import {
+  getVideo,
+  addVideo,
+} from '../background/api' 
+
+domReady(() => {
+  getVideo('wezZVZXFO3U').then((video) => {
+    console.log(video)
+  })
+})
 
 function domReady(callback) {
   if (document.readyState === "complete") {

@@ -13,7 +13,4 @@ chrome.runtime.onInstalled.addListener(() => {
   setStoredOptions({
     mode: false
   })
-  getVideo('wezZVZXFO3U').then((video) => {
-    console.log(video)
-  })
 })
