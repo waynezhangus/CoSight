@@ -13,7 +13,7 @@ chrome.runtime.onInstalled.addListener(() => {
   setStoredOptions({
     mode: false
   })
-  getVideo('du2glBYfpNA').then((video) => {
+  getVideo('wezZVZXFO3U').then((video) => {
     console.log(video)
   })
 })

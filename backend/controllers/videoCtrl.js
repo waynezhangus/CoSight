@@ -95,11 +95,10 @@ const addVideo = asyncHandler( async (req, res) => {
 // @access  Private
 const getVideo = asyncHandler( async (req, res) => {
   const video = await Video.find({videoId: req.params.id})
-  console.log(video)
   if (video.length == 0) {
     res.status(200).json({status: null})
   }
-  res.status(200).json(video)
+  res.status(200).json(video[0])
 })
 
 const videoCtrl = {
