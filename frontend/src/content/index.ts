@@ -3,8 +3,12 @@ import { getVideoId, waitForPromise } from './utils'
 
 // Get the id of the current Youtube video
 const video_id = getVideoId(window.location.href)
+console.log(video_id)
 
-getVideo('wezZVZXFO3U').then((videoData) => {
+getVideo(video_id).then((videoData) => {
+
+  console.log(videoData);
+
   let ccKeywords = videoData.ccKeywords
   let commentsWithTimestamps = videoData.comments
   let newBlackRanges = []
@@ -12,51 +16,174 @@ getVideo('wezZVZXFO3U').then((videoData) => {
   for (let i = 0; i < videoData.blackRanges.length; i++) {
     if (videoData.blackRanges[i].score > 0.5)
       newBlackRanges.push({
-        start: Math.trunc(videoData.blackRanges[i].start),
-        end: Math.trunc(videoData.blackRanges[i].end),
+        start: videoData.blackRanges[i].start,
+        end: videoData.blackRanges[i].end,
         score: videoData.blackRanges[i].score,
         hasVisited: false,
       })
   }
 
-  let commentsToDisplay = commentsWithTimestamps.slice(0, 5)
-
-  // waitForPromise('.html5-video-player', document.body).then(player => {
-  //     const video = player.querySelector('video')
-  //     if(!video)  
-  //       console.log('video not found')
-
-  //     const currentTime = video.currentTime
-  //     console.log(currentTime)
-
-  //     function delay(time) {
-  //       return new Promise(resolve => setTimeout(resolve, time));
-  //     }
-      
-  //     delay(3000).then(() => console.log(video.currentTime));
-  // })
+  let commentsToDisplay = commentsWithTimestamps.slice(0, 5);
 
 
-  // Select the node that will be observed for mutations
   const video = document.querySelector('.html5-video-player').querySelector('video')
-  const progressBar = document.getElementsByClassName('ytp-progress-bar')[0];
-
-
-  // Callback function to execute when mutations are observed
-  var videoContainer = document.getElementsByClassName(
-    'html5-video-container'
-  )[0]
-  var floatCard
-  floatCard = document.createElement('DIV')
+  let videoContainer = document.getElementsByClassName('html5-video-container')[0]
+  
+  // Create the card that will pop up when the user encounters an inaccessible video segment
+  let floatCard = document.createElement('DIV')
   floatCard.id = 'float-card'
   floatCard.setAttribute(
     'style',
-    'position: absolute; z-index: 2; height: 9em; width: 15%; margin-top: 45%; margin-left: 3%; padding-right: 1%; padding-left: 1%; background-color: #E5E5E5; border-radius: 0.5em;'
+    'position: absolute; z-index: 2; height: 10em; width: 15%; margin-top: 45%; margin-left: 3%; padding-right: 1%; padding-left: 1%; background-color: #E5E5E5; border-radius: 0.5em;'
   )
-  // floatCard.class = 'overlay';
   floatCard.innerHTML = `<p style="color: #000000; margin-left: 8%; margin-top: 10%;">Write a quick comment on <br> what you see to help people!</p>
-<p style="color: #000000; margin-left: 8%; margin-top: 8%;" id="source-text"></p>
+<p style="color: #000000; margin-left: 8%; margin-top: 8%;" id="time-range-text"></p>
 <button style="font-size: 12px; margin-left: 78%; margin-top: 2%" id="go-button">Go</button>`
+
+  console.log(newBlackRanges);
+
+  // 14.24 <= curTime < 18.56
+  // curTime >= 18.56 -> ui for blind users
+
+  // 18.56 <= curTime < 20.45
+
+  let prevSegment = -1;
+
+  video.ontimeupdate = (event) => {
+    const curTime = video.currentTime;
+    console.log("Current time is: " + curTime);
+    let showFloatCard = false;
+    let curSegment = -1;
+    
+    // Find the current segment 
+    for (let i = 0; i < newBlackRanges.length; i++) {
+      // EDGE CASE: one segment follows another but they have different types
+
+      const startTime = newBlackRanges[i].start
+      const endTime = newBlackRanges[i].end
+
+      if (curTime >= startTime && curTime < endTime) {
+        // We are inside an inaccessaible segment
+        prevSegment = curSegment
+        curSegment = i
+        console.log("current segment is: " + curSegment)
+        break 
+      }
+    }
+
+    if (curSegment != -1) {
+      console.log("I am here")
+      // now we should add the float card
+      if (document.getElementById('float-card') == null) {
+        videoContainer.appendChild(floatCard)
+        const goButton = document.getElementById('go-button')
+        goButton.onclick = function (e) {
+          window.scrollTo(0, 1150)
+        }
+        let timeRangeText = document.getElementById('time-range-text')
+        timeRangeText.innerHTML = `From ${newBlackRanges[curSegment].start} to ${newBlackRanges[curSegment].end}`
+      } 
+    } else {
+      if (document.getElementById('float-card') != null) {
+        // console.log("Delete the float card: " + curTime)
+        videoContainer.removeChild(floatCard)
+        document.onkeydown = undefined
+      }
+    }
+
+
+     // ========= For normal people =========
+    
+
+    // If the current time does not fall in any of the black ranges AND the float card does exist
+    // console.log("currentTime is: " + curTime);
+    // console.log("show float card: " + showFloatCard);
+    // console.log("float card: " + document.getElementById('float-card'))
+    
+
+  }
+
+// for blind users
+  // if (
+  //   parseInt(progressBar['ariaValueNow']) == newBlackRanges[i].end
+  // ) {
+  //   // console.log(timeRangeArr[i].hasVisited);
+  //   if (newBlackRanges[i].hasVisited == false) {
+  //     console.log('HEYYY!')
+  //     newBlackRanges[i].hasVisited = true
+  //     var audio = new Audio(
+  //       'https://media.geeksforgeeks.org/wp-content/uploads/20190531135120/beep.mp3'
+  //     )
+  //     audio.play()
+  //     console.log('PLAYED!!!')
+  //     const youtubeVideo = <HTMLVideoElement>(
+  //       document.getElementsByTagName('Video')[0]
+  //     )
+  //     youtubeVideo.pause()
+  //     // User uses k to resume the video
+  //     // TO DO #1: User uses tab to go over the comments
+
+  //     var commentsToRead = []
+
+  //     for (let j in commentsWithTimestamps) {
+  //       const timestamp_second = convertToSecond(
+  //         commentsWithTimestamps[j].timestamps[0]
+  //       )
+  //       if (
+  //         timestamp_second >= newBlackRanges[i].start &&
+  //         timestamp_second <= newBlackRanges[i].end
+  //       ) {
+  //         commentsToRead.push(commentsWithTimestamps[j])
+  //       }
+  //     }
+
+  //     // commentToRead : # of keywords
+  //     // var dict: any = {};
+
+  //     // for (let x in commentsToRead) {
+  //     //   var numOfKeywords = 0;
+  //     //   // for (let y in text_on_screen_keywords) {
+  //     //   //   if (commentsToRead[x].text.includes(text_on_screen_keywords[y])) {
+  //     //   //     numOfKeywords += 1;
+  //     //   //   }
+  //     //   // }
+  //     //   dict[commentsToRead[x]] = numOfKeywords;
+  //     // }
+
+  //     // var sorted_dict: any = sort_object(dict);
+
+  //     // var sorted_commentsToRead = sorted_dict.keys;
+
+  //     console.log('COMMENTS TO READ')
+  //     // console.log(sorted_commentsToRead)
+
+  //     var comment_index = 0
+
+  //     document.onkeydown = function (evt) {
+  //       // evt = evt || window.event;
+  //       if (evt.shiftKey) {
+  //         // alert("Ctrl-Z");
+  //         if (comment_index == commentsToRead.length) {
+  //           var msg1 = new SpeechSynthesisUtterance()
+  //           msg1.text = 'Those are all the comments!'
+  //           window.speechSynthesis.speak(msg1)
+  //           return
+  //         }
+  //         if (comment_index > commentsToRead.length) {
+  //           return
+  //         }
+  //         var msg2 = new SpeechSynthesisUtterance()
+  //         console.log('TO READ')
+  //         console.log(commentsToRead[comment_index].text)
+  //         msg2.text = commentsToRead[comment_index].text
+  //         window.speechSynthesis.speak(msg2)
+  //         comment_index += 1
+  //       }
+  //     }
+  //   }
+  // }
+
+ 
 
   function calculatePercentage(timeStamp, totalTime) {
     // CHANGE LATER
@@ -80,166 +207,161 @@ getVideo('wezZVZXFO3U').then((videoData) => {
     return sorted_obj
   }
 
-  const callback = function (mutationsList, observer) {
-    // Use traditional 'for loops' for IE 11
-    for (const mutation of mutationsList) {
-      if (mutation.type === 'childList') {
-        console.log('A child node has been added or removed.')
-      } else if (mutation.type === 'attributes') {
-        switch (mutation.attributeName) {
-          case 'currentTime':
-            console.log(
-              'The ' + mutation.attributeName + ' attribute was modified.'
-            )
-            console.log(mutation.oldValue)
-            var showFloatCard = false
-            // var timeStampArr;
+  // const callback = function (mutationsList, observer) {
+  //   // Use traditional 'for loops' for IE 11
+  //   for (const mutation of mutationsList) {
+  //     if (mutation.type === 'childList') {
+  //       console.log('A child node has been added or removed.')
+  //     } else if (mutation.type === 'attributes') {
+  //       switch (mutation.attributeName) {
+  //         case 'currentTime':
+  //           console.log(
+  //             'The ' + mutation.attributeName + ' attribute was modified.'
+  //           )
+  //           console.log(mutation.oldValue)
+  //           var showFloatCard = false
+  //           var timeStampArr;
 
-            // if (current_url == 'qPix_X-9t7E') {
-            //   timeStampArr = timeStampArr1;
-            // }
+  //           console.log(timeStampArr);
+  //           for (let i in newBlackRanges) {
+  //             // EDGE CASE: one segment follows another but they have different types
+  //             // progressBar["style"].transform.substring(7)
+  //             if (
+  //               parseInt(progressBar['ariaValueNow']) >=
+  //                 newBlackRanges[i].start &&
+  //               parseInt(progressBar['ariaValueNow']) <= newBlackRanges[i].end
+  //             ) {
+  //               if (
+  //                 parseInt(progressBar['ariaValueNow']) == newBlackRanges[i].end
+  //               ) {
+  //                 // console.log(timeRangeArr[i].hasVisited);
+  //                 if (newBlackRanges[i].hasVisited == false) {
+  //                   console.log('HEYYY!')
+  //                   newBlackRanges[i].hasVisited = true
+  //                   var audio = new Audio(
+  //                     'https://media.geeksforgeeks.org/wp-content/uploads/20190531135120/beep.mp3'
+  //                   )
+  //                   audio.play()
+  //                   console.log('PLAYED!!!')
+  //                   const youtubeVideo = <HTMLVideoElement>(
+  //                     document.getElementsByTagName('Video')[0]
+  //                   )
+  //                   youtubeVideo.pause()
+  //                   // User uses k to resume the video
+  //                   // TO DO #1: User uses tab to go over the comments
 
-            // if (current_url == 'W0TM4LQmoZY') {
-            //   timeStampArr = timeStampArr2;
-            // }
-            // console.log(timeStampArr);
-            for (let i in newBlackRanges) {
-              // EDGE CASE: one segment follows another but they have different types
-              // progressBar["style"].transform.substring(7)
-              if (
-                parseInt(progressBar['ariaValueNow']) >=
-                  newBlackRanges[i].start &&
-                parseInt(progressBar['ariaValueNow']) <= newBlackRanges[i].end
-              ) {
-                if (
-                  parseInt(progressBar['ariaValueNow']) == newBlackRanges[i].end
-                ) {
-                  // console.log(timeRangeArr[i].hasVisited);
-                  if (newBlackRanges[i].hasVisited == false) {
-                    console.log('HEYYY!')
-                    newBlackRanges[i].hasVisited = true
-                    var audio = new Audio(
-                      'https://media.geeksforgeeks.org/wp-content/uploads/20190531135120/beep.mp3'
-                    )
-                    audio.play()
-                    console.log('PLAYED!!!')
-                    const youtubeVideo = <HTMLVideoElement>(
-                      document.getElementsByTagName('Video')[0]
-                    )
-                    youtubeVideo.pause()
-                    // User uses k to resume the video
-                    // TO DO #1: User uses tab to go over the comments
+  //                   var commentsToRead = []
 
-                    var commentsToRead = []
+  //                   for (let j in commentsWithTimestamps) {
+  //                     const timestamp_second = convertToSecond(
+  //                       commentsWithTimestamps[j].timestamps[0]
+  //                     )
+  //                     if (
+  //                       timestamp_second >= newBlackRanges[i].start &&
+  //                       timestamp_second <= newBlackRanges[i].end
+  //                     ) {
+  //                       commentsToRead.push(commentsWithTimestamps[j])
+  //                     }
+  //                   }
 
-                    for (let j in commentsWithTimestamps) {
-                      const timestamp_second = convertToSecond(
-                        commentsWithTimestamps[j].timestamps[0]
-                      )
-                      if (
-                        timestamp_second >= newBlackRanges[i].start &&
-                        timestamp_second <= newBlackRanges[i].end
-                      ) {
-                        commentsToRead.push(commentsWithTimestamps[j])
-                      }
-                    }
+  //                   // commentToRead : # of keywords
+  //                   // var dict: any = {};
 
-                    // commentToRead : # of keywords
-                    // var dict: any = {};
+  //                   // for (let x in commentsToRead) {
+  //                   //   var numOfKeywords = 0;
+  //                   //   // for (let y in text_on_screen_keywords) {
+  //                   //   //   if (commentsToRead[x].text.includes(text_on_screen_keywords[y])) {
+  //                   //   //     numOfKeywords += 1;
+  //                   //   //   }
+  //                   //   // }
+  //                   //   dict[commentsToRead[x]] = numOfKeywords;
+  //                   // }
 
-                    // for (let x in commentsToRead) {
-                    //   var numOfKeywords = 0;
-                    //   // for (let y in text_on_screen_keywords) {
-                    //   //   if (commentsToRead[x].text.includes(text_on_screen_keywords[y])) {
-                    //   //     numOfKeywords += 1;
-                    //   //   }
-                    //   // }
-                    //   dict[commentsToRead[x]] = numOfKeywords;
-                    // }
+  //                   // var sorted_dict: any = sort_object(dict);
 
-                    // var sorted_dict: any = sort_object(dict);
+  //                   // var sorted_commentsToRead = sorted_dict.keys;
 
-                    // var sorted_commentsToRead = sorted_dict.keys;
+  //                   console.log('COMMENTS TO READ')
+  //                   // console.log(sorted_commentsToRead)
 
-                    console.log('COMMENTS TO READ')
-                    // console.log(sorted_commentsToRead)
+  //                   var comment_index = 0
 
-                    var comment_index = 0
+  //                   document.onkeydown = function (evt) {
+  //                     // evt = evt || window.event;
+  //                     if (evt.shiftKey) {
+  //                       // alert("Ctrl-Z");
+  //                       if (comment_index == commentsToRead.length) {
+  //                         var msg1 = new SpeechSynthesisUtterance()
+  //                         msg1.text = 'Those are all the comments!'
+  //                         window.speechSynthesis.speak(msg1)
+  //                         return
+  //                       }
+  //                       if (comment_index > commentsToRead.length) {
+  //                         return
+  //                       }
+  //                       var msg2 = new SpeechSynthesisUtterance()
+  //                       console.log('TO READ')
+  //                       console.log(commentsToRead[comment_index].text)
+  //                       msg2.text = commentsToRead[comment_index].text
+  //                       window.speechSynthesis.speak(msg2)
+  //                       comment_index += 1
+  //                     }
+  //                   }
+  //                 }
+  //               }
+  //               showFloatCard = true
+  //               // if (document.getElementById("float-card") != null) {
+  //               //   if (timeRangeArr[i].type == timeRangeType.NonDialouge) {
+  //               //     document.getElementById("source-text").innerHTML = "Reason for showing: this video segment has no dialouge";
+  //               //   }
+  //               //   else if (timeRangeArr[i].type == timeRangeType.NoText) {
+  //               //     document.getElementById("source-text").innerHTML = "Reason for showing: text on screen not mentioned";
+  //               //   }
+  //               // }
+  //               // videoContainer.childElementCount == 1
+  //               if (document.getElementById('float-card') == null) {
+  //                 videoContainer.appendChild(floatCard)
+  //                 const goButton = document.getElementById('go-button')
+  //                 goButton.onclick = function (e) {
+  //                   window.scrollTo(0, 1150)
+  //                 }
+  //                 // if (timeRangeArr[i].type == timeRangeType.NonDialouge) {
+  //                 //   document.getElementById("source-text").innerHTML = "Reason for showing: this video segment has no dialouge";
+  //                 // }
+  //                 // else if (timeRangeArr[i].type == timeRangeType.NoText) {
+  //                 //   document.getElementById("source-text").innerHTML = "Reason for showing: text on screen not mentioned";
+  //                 // }
+  //               }
+  //               break
+  //             }
+  //           }
 
-                    document.onkeydown = function (evt) {
-                      // evt = evt || window.event;
-                      if (evt.shiftKey) {
-                        // alert("Ctrl-Z");
-                        if (comment_index == commentsToRead.length) {
-                          var msg1 = new SpeechSynthesisUtterance()
-                          msg1.text = 'Those are all the comments!'
-                          window.speechSynthesis.speak(msg1)
-                          return
-                        }
-                        if (comment_index > commentsToRead.length) {
-                          return
-                        }
-                        var msg2 = new SpeechSynthesisUtterance()
-                        console.log('TO READ')
-                        console.log(commentsToRead[comment_index].text)
-                        msg2.text = commentsToRead[comment_index].text
-                        window.speechSynthesis.speak(msg2)
-                        comment_index += 1
-                      }
-                    }
-                  }
-                }
-                showFloatCard = true
-                // if (document.getElementById("float-card") != null) {
-                //   if (timeRangeArr[i].type == timeRangeType.NonDialouge) {
-                //     document.getElementById("source-text").innerHTML = "Reason for showing: this video segment has no dialouge";
-                //   }
-                //   else if (timeRangeArr[i].type == timeRangeType.NoText) {
-                //     document.getElementById("source-text").innerHTML = "Reason for showing: text on screen not mentioned";
-                //   }
-                // }
-                // videoContainer.childElementCount == 1
-                if (document.getElementById('float-card') == null) {
-                  videoContainer.appendChild(floatCard)
-                  const goButton = document.getElementById('go-button')
-                  goButton.onclick = function (e) {
-                    window.scrollTo(0, 1150)
-                  }
-                  // if (timeRangeArr[i].type == timeRangeType.NonDialouge) {
-                  //   document.getElementById("source-text").innerHTML = "Reason for showing: this video segment has no dialouge";
-                  // }
-                  // else if (timeRangeArr[i].type == timeRangeType.NoText) {
-                  //   document.getElementById("source-text").innerHTML = "Reason for showing: text on screen not mentioned";
-                  // }
-                }
-                break
-              }
-            }
-
-            if (
-              !showFloatCard &&
-              document.getElementById('float-card') != null
-            ) {
-              videoContainer.removeChild(floatCard)
-              document.onkeydown = undefined
-            }
-
-            break
-        }
-      }
-    }
-  }
+  //           if (
+  //             !showFloatCard &&
+  //             document.getElementById('float-card') != null
+  //           ) {
+  //             videoContainer.removeChild(floatCard)
+  //             document.onkeydown = undefined
+  //           }
+  //           break
+  //         default:
+  //           console.log("test");
+  //       }
+  //     }
+  //   }
+  // }
+  
 
   // Create an observer instance linked to the callback function
-  const new_observer = new MutationObserver(callback)
+  // const new_observer = new MutationObserver(callback)
 
   // Start observing the target node for configured mutations
-  new_observer.observe(video, {
-    attributeFilter: ['currentTime'],
-    attributeOldValue: true,
-    childList: true,
-    subtree: true,
-  })
+  // new_observer.observe(video, {
+  //   attributeFilter: ['currentTime'],
+  //   attributeOldValue: true,
+  //   childList: true,
+  //   subtree: true,
+  // })
 
   // end
 
