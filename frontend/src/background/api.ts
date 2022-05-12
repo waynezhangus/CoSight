@@ -16,6 +16,7 @@ export interface VideoData {
     start: number,
     end: number,
     score: number,
+    hasVisited: boolean,
   }[]
   status: 'null' | 'processing' | 'available'
 }

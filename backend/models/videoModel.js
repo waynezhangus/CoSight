@@ -23,6 +23,10 @@ const videoSchema = mongoose.Schema(
         start: Number,
         end: Number,
         score: Number,
+        hasVisited: {
+          type: Boolean,
+          default: false,
+        },
       },
     ],
     status: {

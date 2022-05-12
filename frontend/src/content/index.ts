@@ -1,189 +1,71 @@
-import {getVideo, addVideo} from '../background/api'
+import { getVideo, addVideo } from '../background/api'
 import { getVideoId, waitForPromise } from './utils'
+import { createFloatCard, deleteFloatCard, readComments } from './components'
 
 // Get the id of the current Youtube video
-const video_id = getVideoId(window.location.href)
-console.log(video_id)
+const video_id = getVideoId(window.location.href);
+
+let mode = true;
 
 getVideo(video_id).then((videoData) => {
 
-  console.log(videoData);
+  //console.log(videoData)
 
+  const videoSeg = videoData.blackRanges.filter(({score}) => score > 0.5);
+  let commentsTimed = videoData.comments
+  let commentsToDisplay = videoData.comments.slice(0, 5);
   let ccKeywords = videoData.ccKeywords
-  let commentsWithTimestamps = videoData.comments
-  let newBlackRanges = []
-
-  for (let i = 0; i < videoData.blackRanges.length; i++) {
-    if (videoData.blackRanges[i].score > 0.5)
-      newBlackRanges.push({
-        start: videoData.blackRanges[i].start,
-        end: videoData.blackRanges[i].end,
-        score: videoData.blackRanges[i].score,
-        hasVisited: false,
-      })
-  }
-
-  let commentsToDisplay = commentsWithTimestamps.slice(0, 5);
 
 
-  const video = document.querySelector('.html5-video-player').querySelector('video')
-  let videoContainer = document.getElementsByClassName('html5-video-container')[0]
-  
-  // Create the card that will pop up when the user encounters an inaccessible video segment
-  let floatCard = document.createElement('DIV')
-  floatCard.id = 'float-card'
-  floatCard.setAttribute(
-    'style',
-    'position: absolute; z-index: 2; height: 10em; width: 15%; margin-top: 45%; margin-left: 3%; padding-right: 1%; padding-left: 1%; background-color: #E5E5E5; border-radius: 0.5em;'
-  )
-  floatCard.innerHTML = `<p style="color: #000000; margin-left: 8%; margin-top: 10%;">Write a quick comment on <br> what you see to help people!</p>
-<p style="color: #000000; margin-left: 8%; margin-top: 8%;" id="time-range-text"></p>
-<button style="font-size: 12px; margin-left: 78%; margin-top: 2%" id="go-button">Go</button>`
+  const video = document.querySelector('.html5-video-player').querySelector('video');
+  console.log(video);
 
-  console.log(newBlackRanges);
+  let prevSeg = undefined;
 
-  // 14.24 <= curTime < 18.56
-  // curTime >= 18.56 -> ui for blind users
-
-  // 18.56 <= curTime < 20.45
-
-  let prevSegment = -1;
-
-  video.ontimeupdate = (event) => {
-    const curTime = video.currentTime;
-    console.log("Current time is: " + curTime);
-    let showFloatCard = false;
-    let curSegment = -1;
-    
-    // Find the current segment 
-    for (let i = 0; i < newBlackRanges.length; i++) {
-      // EDGE CASE: one segment follows another but they have different types
-
-      const startTime = newBlackRanges[i].start
-      const endTime = newBlackRanges[i].end
-
-      if (curTime >= startTime && curTime < endTime) {
-        // We are inside an inaccessaible segment
-        prevSegment = curSegment
-        curSegment = i
-        console.log("current segment is: " + curSegment)
-        break 
-      }
-    }
-
-    if (curSegment != -1) {
-      console.log("I am here")
-      // now we should add the float card
-      if (document.getElementById('float-card') == null) {
-        videoContainer.appendChild(floatCard)
-        const goButton = document.getElementById('go-button')
-        goButton.onclick = function (e) {
-          window.scrollTo(0, 1150)
+  video.ontimeupdate = () => {
+    let curTime = video.currentTime;
+    let curSeg = videoSeg.find(({ start, end }) => {
+      return (start <= curTime) && (curTime < end);
+    });
+    //console.log(curSeg)
+    if (!mode) {
+      if (curSeg != prevSeg) {
+        if (!prevSeg) {
+          if (!curSeg.hasVisited) {
+            createFloatCard(curSeg);
+            curSeg.hasVisited = true;
+          }     
+        } else if (!curSeg) {
+          deleteFloatCard();
+        } else {
+          deleteFloatCard();
+          if (!curSeg.hasVisited) {
+            createFloatCard(curSeg);
+            curSeg.hasVisited = true;
+          } 
         }
-        let timeRangeText = document.getElementById('time-range-text')
-        timeRangeText.innerHTML = `From ${newBlackRanges[curSegment].start} to ${newBlackRanges[curSegment].end}`
-      } 
+      }
     } else {
-      if (document.getElementById('float-card') != null) {
-        // console.log("Delete the float card: " + curTime)
-        videoContainer.removeChild(floatCard)
-        document.onkeydown = undefined
+      if (curSeg != prevSeg) {
+        if (!prevSeg) {
+    
+        } else if (!curSeg) {
+          //deleteFloatCard();
+          if (!prevSeg.hasVisited) {
+            readComments(commentsTimed, prevSeg);
+            prevSeg.hasVisited = true;
+          }
+        } else {
+          //deleteFloatCard(); 
+          if (!prevSeg.hasVisited) {
+            readComments(commentsTimed, prevSeg);
+            prevSeg.hasVisited = true;
+          }
+        }
       }
     }
-
-
-     // ========= For normal people =========
-    
-
-    // If the current time does not fall in any of the black ranges AND the float card does exist
-    // console.log("currentTime is: " + curTime);
-    // console.log("show float card: " + showFloatCard);
-    // console.log("float card: " + document.getElementById('float-card'))
-    
-
+    prevSeg = curSeg;
   }
-
-// for blind users
-  // if (
-  //   parseInt(progressBar['ariaValueNow']) == newBlackRanges[i].end
-  // ) {
-  //   // console.log(timeRangeArr[i].hasVisited);
-  //   if (newBlackRanges[i].hasVisited == false) {
-  //     console.log('HEYYY!')
-  //     newBlackRanges[i].hasVisited = true
-  //     var audio = new Audio(
-  //       'https://media.geeksforgeeks.org/wp-content/uploads/20190531135120/beep.mp3'
-  //     )
-  //     audio.play()
-  //     console.log('PLAYED!!!')
-  //     const youtubeVideo = <HTMLVideoElement>(
-  //       document.getElementsByTagName('Video')[0]
-  //     )
-  //     youtubeVideo.pause()
-  //     // User uses k to resume the video
-  //     // TO DO #1: User uses tab to go over the comments
-
-  //     var commentsToRead = []
-
-  //     for (let j in commentsWithTimestamps) {
-  //       const timestamp_second = convertToSecond(
-  //         commentsWithTimestamps[j].timestamps[0]
-  //       )
-  //       if (
-  //         timestamp_second >= newBlackRanges[i].start &&
-  //         timestamp_second <= newBlackRanges[i].end
-  //       ) {
-  //         commentsToRead.push(commentsWithTimestamps[j])
-  //       }
-  //     }
-
-  //     // commentToRead : # of keywords
-  //     // var dict: any = {};
-
-  //     // for (let x in commentsToRead) {
-  //     //   var numOfKeywords = 0;
-  //     //   // for (let y in text_on_screen_keywords) {
-  //     //   //   if (commentsToRead[x].text.includes(text_on_screen_keywords[y])) {
-  //     //   //     numOfKeywords += 1;
-  //     //   //   }
-  //     //   // }
-  //     //   dict[commentsToRead[x]] = numOfKeywords;
-  //     // }
-
-  //     // var sorted_dict: any = sort_object(dict);
-
-  //     // var sorted_commentsToRead = sorted_dict.keys;
-
-  //     console.log('COMMENTS TO READ')
-  //     // console.log(sorted_commentsToRead)
-
-  //     var comment_index = 0
-
-  //     document.onkeydown = function (evt) {
-  //       // evt = evt || window.event;
-  //       if (evt.shiftKey) {
-  //         // alert("Ctrl-Z");
-  //         if (comment_index == commentsToRead.length) {
-  //           var msg1 = new SpeechSynthesisUtterance()
-  //           msg1.text = 'Those are all the comments!'
-  //           window.speechSynthesis.speak(msg1)
-  //           return
-  //         }
-  //         if (comment_index > commentsToRead.length) {
-  //           return
-  //         }
-  //         var msg2 = new SpeechSynthesisUtterance()
-  //         console.log('TO READ')
-  //         console.log(commentsToRead[comment_index].text)
-  //         msg2.text = commentsToRead[comment_index].text
-  //         window.speechSynthesis.speak(msg2)
-  //         comment_index += 1
-  //       }
-  //     }
-  //   }
-  // }
-
- 
 
   function calculatePercentage(timeStamp, totalTime) {
     // CHANGE LATER
@@ -508,14 +390,14 @@ getVideo(video_id).then((videoData) => {
             }
 
             var matched_comments = []
-            for (let i in commentsWithTimestamps) {
-              for (let j in commentsWithTimestamps[i].keywords) {
+            for (let i in commentsTimed) {
+              for (let j in commentsTimed[i].keywords) {
                 if (
                   comment.textContent.includes(
-                    commentsWithTimestamps[i].keywords[j]
+                    commentsTimed[i].keywords[j]
                   )
                 ) {
-                  matched_comments.push(commentsWithTimestamps[i])
+                  matched_comments.push(commentsTimed[i])
                 }
               }
             }
