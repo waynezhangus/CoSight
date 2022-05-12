@@ -3,33 +3,12 @@ import {
   addVideo,
 } from '../background/api' 
 
-function domReady(callback) {
-  if (document.readyState === "complete") {
-    callback()
-  } else {
-    window.addEventListener("load", callback, {
-      once: true,
-    })
-  }
-}
-
-// Get the id of a Youtube video
+// Get the id of the current Youtube video
 var index = location.href.indexOf('=');
 const video_id = location.href.substr(index+1, 11);
 
-
-
-// domReady(() => {
-//   getVideo(video_id).then((video) => {
-//     ccKeywords = video.ccKeywords;
-//     commentsWithTimestamps = video.comments;
-//     blackRanges = video.blackRanges;
-//     console.log(video);
-//   })
-// })
-
-
 getVideo(video_id).then((video) => {
+
   let ccKeywords = video.ccKeywords;
   let commentsWithTimestamps = video.comments;
   let newBlackRanges = [];
@@ -44,118 +23,6 @@ let commentsToDisplay = commentsWithTimestamps.slice(0, 5);
 console.log("commentsToDisplay");
 console.log(commentsToDisplay);
 
-function waitFor(selector: string, callback, timeout?: number) {
-  const element = document.querySelector(selector);
-  if (element) {
-    callback(element)
-  } else {
-    if (timeout) {
-      return window.setTimeout(() => {
-        return window.requestAnimationFrame(() => {
-          waitFor(selector, callback)
-        });
-      }, timeout)
-    }
-    return window.requestAnimationFrame(() => {
-      waitFor(selector, callback)
-    })
-  }
-}
-
-function waitForPromise(selector: string, parent: Element) {
-  return new Promise(resolve => {
-    let target = parent.querySelector(selector)
-    if(target) {
-      resolve(target)
-    } else {
-      const observer = new MutationObserver(mutations => {
-      target = parent.querySelector(selector)
-      if(target) {
-        resolve(target)
-        observer.disconnect()
-      }
-      })
-      observer.observe(parent, {
-        childList: true,  subtree: true
-      })
-    }
-  })
-}
-
-// Dependencies
-// import { scrapeAllComments, scrapeCaptions, getCommentsWithTimestamps, postData } from "./utils";
-// import { timeRangeType } from "./timeRange";
-// import { text_on_screen_keywords } from "./constants";
-// import { timeRangeArr } from "./constants";
-
-
-// const response = async() => {
-//   await getVideo(video_id);
-// };
-
-// console.log(response);
-
-// var captions = [];
-
-// Scrape YouTube Comments
-
-// var xhr = new XMLHttpRequest();
-// xhr.responseType = 'json';
-// var commentObjects = [];
-
-
-
-
-/*
-scrapeAllComments(commentObjects, video_id).then(() => {
-  console.log("Comments Scraped!!!");
-  console.log(commentObjects);
-  commentsWithTimestamps = getCommentsWithTimestamps(commentObjects);
-  commentsToDisplay = commentsWithTimestamps.slice(0, 5);
-})
-*/
-
-
-
-/*
-// Get keywords using IBM's api
-scrapeCaptions(video_id, captions).then((caption_string) => {
-    console.log(captions);
-    console.log(caption_string);
-
-    postData('https://api.us-east.natural-language-understanding.watson.cloud.ibm.com/instances/db9da5ba-bf8c-444e-b64a-ffdc988b0407/v1/analyze?version=2021-08-01', {
-      text: caption_string,
-      features: {
-        keywords: {
-          emotion: true,
-          sentiment: true,
-          limit: 10
-        }
-      }
-    })
-    .then(data => {
-      // JSON data parsed by `data.json()` call
-      keywords = data["keywords"];
-      for (let i in keywords) {
-        keywords[i]["timestamps"] = [];
-        for (let j in captions) {
-          if (captions[j]["text"].includes(keywords[i]["text"])) {
-            keywords[i]["timestamps"].push(captions[j]["start"]);
-          }
-        }
-      }
-      console.log('KEYWORDS!!');
-      console.log(keywords);
-    });
-})
-*/
-
-// var progressBar = document.getElementsByClassName("ytp-play-progress ytp-swatch-background-color");
-// console.log(progressBar[0]["style"].cssText);
-// console.log("!!!!");
-// console.log(progressBar);
-
-// observe the progress bar
 
 // Select the node that will be observed for mutations
 // const progressBar = document.getElementsByClassName("ytp-play-progress ytp-swatch-background-color")[0];
@@ -327,35 +194,6 @@ const callback = function(mutationsList, observer) {
               
               break;
           }
-            // console.log('The ' + mutation.attributeName + ' attribute was modified.');
-            // console.log(progressBar["style"].transform);
-            
-
-
-            // if (parseFloat(progressBar["style"].transform.substring(7)) > 0.1084 &&
-            //     parseFloat(progressBar["style"].transform.substring(7)) < 0.123 && videoContainer.childElementCount == 1) {
-            //       videoContainer.appendChild(floatCard);   
-            //       const goButton = document.getElementById("go-button");
-            //       goButton.onclick = function(e) {
-            //         window.scrollTo(0, 1150);
-            //       }
-            // }
-            // if ((parseFloat(progressBar["style"].transform.substring(7)) <= 0.1084 ||
-            //     parseFloat(progressBar["style"].transform.substring(7)) >= 0.123) && videoContainer.childElementCount == 2) {
-            //       videoContainer.removeChild(floatCard);
-            // }
-            // if (parseFloat(progressBar["style"].transform.substring(7)) > calculatePercentage(45.5) &&
-            //     parseFloat(progressBar["style"].transform.substring(7)) < calculatePercentage(57) && videoContainer.childElementCount == 1) {
-            //       videoContainer.appendChild(floatCard);   
-            //       const goButton = document.getElementById("go-button");
-            //       goButton.onclick = function(e) {
-            //         window.scrollTo(0, 1150);
-            //       }
-            // }
-            // if ((parseFloat(progressBar["style"].transform.substring(7)) <= calculatePercentage(45.5) ||
-            //     parseFloat(progressBar["style"].transform.substring(7)) >= calculatePercentage(57)) && videoContainer.childElementCount == 2) {
-            //       videoContainer.removeChild(floatCard);
-            // }
         }
     }
 };
@@ -570,13 +408,7 @@ let observer = new MutationObserver((mutations) => {
                 }
               }
 
-              // if (!box.innerHTML) {
-              //   box.innerHTML = `<div style="font-size: 130%">Add a time stamp ...</div>
-              // <div style="margin-top: 3%;margin-left: 3%;margin-right: 3%;">
-              //     <div style="margin-bottom: 2%;">suggested: Are you talking about&nbsp;&nbsp;<span style="color: blue;text-decoration: underline;">06:22</span>?</div>
-              //     <div><span style="color: blue;text-decoration: underline;">06:22</span>&nbsp;&nbsp;that bottle looks like ...</div>
-              // </div>`;
-              // }
+              
             }
         }
 
@@ -585,8 +417,154 @@ let observer = new MutationObserver((mutations) => {
             comments = node;
             console.log(node);
         }
+    }})
+  })
+  
+  observer.observe(document.body, {
+      childList: true
+    , subtree: true
+    , attributes: true 
+    , characterData: false
+  })
+});
 
-      //   if (!document.querySelector('#my-cool-node') && comments) {
+
+// ======================== unused code ========================
+// function domReady(callback) {
+//   if (document.readyState === "complete") {
+//     callback()
+//   } else {
+//     window.addEventListener("load", callback, {
+//       once: true,
+//     })
+//   }
+// }
+
+// domReady(() => {
+//   getVideo(video_id).then((video) => {
+//     ccKeywords = video.ccKeywords;
+//     commentsWithTimestamps = video.comments;
+//     blackRanges = video.blackRanges;
+//     console.log(video);
+//   })
+// })
+
+// function waitFor(selector: string, callback, timeout?: number) {
+//   const element = document.querySelector(selector);
+//   if (element) {
+//     callback(element)
+//   } else {
+//     if (timeout) {
+//       return window.setTimeout(() => {
+//         return window.requestAnimationFrame(() => {
+//           waitFor(selector, callback)
+//         });
+//       }, timeout)
+//     }
+//     return window.requestAnimationFrame(() => {
+//       waitFor(selector, callback)
+//     })
+//   }
+// }
+
+// function waitForPromise(selector: string, parent: Element) {
+//   return new Promise(resolve => {
+//     let target = parent.querySelector(selector)
+//     if(target) {
+//       resolve(target)
+//     } else {
+//       const observer = new MutationObserver(mutations => {
+//       target = parent.querySelector(selector)
+//       if(target) {
+//         resolve(target)
+//         observer.disconnect()
+//       }
+//       })
+//       observer.observe(parent, {
+//         childList: true,  subtree: true
+//       })
+//     }
+//   })
+// }
+
+
+// Dependencies
+// import { scrapeAllComments, scrapeCaptions, getCommentsWithTimestamps, postData } from "./utils";
+// import { timeRangeType } from "./timeRange";
+// import { text_on_screen_keywords } from "./constants";
+// import { timeRangeArr } from "./constants";
+
+
+// const response = async() => {
+//   await getVideo(video_id);
+// };
+
+// console.log(response);
+
+// var captions = [];
+
+// Scrape YouTube Comments
+
+// var xhr = new XMLHttpRequest();
+// xhr.responseType = 'json';
+// var commentObjects = [];
+
+
+
+
+/*
+scrapeAllComments(commentObjects, video_id).then(() => {
+  console.log("Comments Scraped!!!");
+  console.log(commentObjects);
+  commentsWithTimestamps = getCommentsWithTimestamps(commentObjects);
+  commentsToDisplay = commentsWithTimestamps.slice(0, 5);
+})
+*/
+
+
+
+/*
+// Get keywords using IBM's api
+scrapeCaptions(video_id, captions).then((caption_string) => {
+    console.log(captions);
+    console.log(caption_string);
+
+    postData('https://api.us-east.natural-language-understanding.watson.cloud.ibm.com/instances/db9da5ba-bf8c-444e-b64a-ffdc988b0407/v1/analyze?version=2021-08-01', {
+      text: caption_string,
+      features: {
+        keywords: {
+          emotion: true,
+          sentiment: true,
+          limit: 10
+        }
+      }
+    })
+    .then(data => {
+      // JSON data parsed by `data.json()` call
+      keywords = data["keywords"];
+      for (let i in keywords) {
+        keywords[i]["timestamps"] = [];
+        for (let j in captions) {
+          if (captions[j]["text"].includes(keywords[i]["text"])) {
+            keywords[i]["timestamps"].push(captions[j]["start"]);
+          }
+        }
+      }
+      console.log('KEYWORDS!!');
+      console.log(keywords);
+    });
+})
+*/
+
+// var progressBar = document.getElementsByClassName("ytp-play-progress ytp-swatch-background-color");
+// console.log(progressBar[0]["style"].cssText);
+// console.log("!!!!");
+// console.log(progressBar);
+
+// observe the progress bar
+
+
+//   if (!document.querySelector('#my-cool-node') && comments) {
 
       //     console.log(comments);
       //     var box = document.createElement("DIV"); 
@@ -608,15 +586,42 @@ let observer = new MutationObserver((mutations) => {
       //     comments.childNodes[1].appendChild(box);
       //   }
       // }
-    }})
-  })
-  
-  observer.observe(document.body, {
-      childList: true
-    , subtree: true
-    , attributes: true 
-    , characterData: false
-  })
+
+      // if (!box.innerHTML) {
+              //   box.innerHTML = `<div style="font-size: 130%">Add a time stamp ...</div>
+              // <div style="margin-top: 3%;margin-left: 3%;margin-right: 3%;">
+              //     <div style="margin-bottom: 2%;">suggested: Are you talking about&nbsp;&nbsp;<span style="color: blue;text-decoration: underline;">06:22</span>?</div>
+              //     <div><span style="color: blue;text-decoration: underline;">06:22</span>&nbsp;&nbsp;that bottle looks like ...</div>
+              // </div>`;
+              // }
+
+// console.log('The ' + mutation.attributeName + ' attribute was modified.');
+            // console.log(progressBar["style"].transform);
+            
 
 
-});
+            // if (parseFloat(progressBar["style"].transform.substring(7)) > 0.1084 &&
+            //     parseFloat(progressBar["style"].transform.substring(7)) < 0.123 && videoContainer.childElementCount == 1) {
+            //       videoContainer.appendChild(floatCard);   
+            //       const goButton = document.getElementById("go-button");
+            //       goButton.onclick = function(e) {
+            //         window.scrollTo(0, 1150);
+            //       }
+            // }
+            // if ((parseFloat(progressBar["style"].transform.substring(7)) <= 0.1084 ||
+            //     parseFloat(progressBar["style"].transform.substring(7)) >= 0.123) && videoContainer.childElementCount == 2) {
+            //       videoContainer.removeChild(floatCard);
+            // }
+            // if (parseFloat(progressBar["style"].transform.substring(7)) > calculatePercentage(45.5) &&
+            //     parseFloat(progressBar["style"].transform.substring(7)) < calculatePercentage(57) && videoContainer.childElementCount == 1) {
+            //       videoContainer.appendChild(floatCard);   
+            //       const goButton = document.getElementById("go-button");
+            //       goButton.onclick = function(e) {
+            //         window.scrollTo(0, 1150);
+            //       }
+            // }
+            // if ((parseFloat(progressBar["style"].transform.substring(7)) <= calculatePercentage(45.5) ||
+            //     parseFloat(progressBar["style"].transform.substring(7)) >= calculatePercentage(57)) && videoContainer.childElementCount == 2) {
+            //       videoContainer.removeChild(floatCard);
+            // }
+
