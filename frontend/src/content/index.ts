@@ -12,6 +12,7 @@ getVideo(video_id).then((videoData) => {
   //console.log(videoData)
 
   const videoSeg = videoData.blackRanges.filter(({score}) => score > 0.5);
+  console.log(videoSeg);
   let commentsTimed = videoData.comments
   let commentsToDisplay = videoData.comments.slice(0, 5);
   let ccKeywords = videoData.ccKeywords
@@ -22,11 +23,26 @@ getVideo(video_id).then((videoData) => {
 
   let prevSeg = undefined;
 
+  let isSeeking = false;
+
+  video.onseeking = () => {
+    console.log("onseeking")
+    isSeeking = true;
+  }
+
   video.ontimeupdate = () => {
+    console.log("ontimeupdate")
     let curTime = video.currentTime;
     let curSeg = videoSeg.find(({ start, end }) => {
       return (start <= curTime) && (curTime < end);
     });
+
+    // when the user is moving/skipping to a new timestamp
+    if (isSeeking) {
+      prevSeg = curSeg;
+      isSeeking = false;
+      return;
+    }
     //console.log(curSeg)
     if (!mode) {
       if (curSeg != prevSeg) {
