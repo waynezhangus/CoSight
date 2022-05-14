@@ -60,7 +60,7 @@ function deleteFloatCard () {
   console.log('delete')
   const videoContainer = document.querySelector('.html5-video-container');
   const floatCard = videoContainer.querySelector('.float-card');
-  videoContainer.removeChild(floatCard);
+  floatCard ? videoContainer.removeChild(floatCard) : null;
 }
 
 function readComments(commentsTimed, { start, end }) {
@@ -172,9 +172,56 @@ function createEasyStartCard(comments) {
   document.head.appendChild(styleSheet);
 }
 
+
+function createRangeBar(blackRanges) {
+  const palette = ['#e3f2fd', '#bbdefb', '#90caf9', '#64b5f6', '#42a5f5', '#2196f3', '#1e88e5', '#1976d2', '#1565c0', '#0d47a1'];
+  const styles = `
+    .range-bar {
+      background-color: white;
+      width: 100%;
+      height: 5px;
+      margin: auto;
+      position: relative;
+      z-index: 2;
+    }
+    .range-bar .seg {
+      height: 100%;
+      position: absolute;
+    }
+
+  `
+
+  const barContainer = document.querySelector('.ytp-progress-bar-container');
+  const bar = document.createElement('div');
+  bar.classList.add('range-bar')
+  const totalTime = blackRanges[blackRanges.length - 1].end;
+  let left = 0, width = 0, color = '';
+
+  blackRanges.forEach((blackRange, i) => {
+    const {start, end, score} = blackRange;
+    width = (end - start) / totalTime * 100;
+    color = palette[score == 1 ? 9 : Math.floor(score / 0.1)];
+
+    const seg = document.createElement('div');
+    seg.classList.add('seg');
+    seg.setAttribute('id', 'seg' + i)
+    bar.appendChild(seg);
+    seg.style.width = width + '%';
+    seg.style.left = left + '%';
+    seg.style.backgroundColor = color;
+    left += width;
+  })
+  barContainer.insertAdjacentElement('afterend', bar)
+
+  const styleSheet = document.createElement("style");
+  styleSheet.innerText = styles;
+  document.head.appendChild(styleSheet);
+}
+
 export {
   createFloatCard,
   deleteFloatCard,
   readComments,
   createEasyStartCard,
+  createRangeBar
 }

@@ -1,11 +1,15 @@
 import { getVideo, addVideo } from '../background/api'
 import { getVideoId, waitForPromise, stampToSecond } from './utils'
-import { createFloatCard, deleteFloatCard, readComments, createEasyStartCard } from './components'
+import { createFloatCard, 
+        deleteFloatCard, 
+        readComments, 
+        createEasyStartCard, 
+        createRangeBar } from './components'
 
 // Get the id of the current Youtube video
 const video_id = getVideoId(window.location.href);
 
-let mode = true;
+let mode = false;
 
 getVideo(video_id).then((videoData) => {
 
@@ -14,17 +18,16 @@ getVideo(video_id).then((videoData) => {
   let ccKeywords = videoData.ccKeywords
 
   const video = document.getElementsByTagName('video')[0];
+  createRangeBar(videoData.blackRanges)
 
   let prevSeg = undefined;
   let isSeeking = false;
 
   video.onseeking = () => {
-    console.log("onseeking")
     isSeeking = true;
   }
 
   video.ontimeupdate = () => {
-    console.log("ontimeupdate")
     let curTime = video.currentTime;
     let curSeg = videoSeg.find(({ start, end }) => {
       return (start <= curTime) && (curTime < end);
