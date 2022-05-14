@@ -1,4 +1,5 @@
 //const videoContainer = document.getElementsByClassName('html5-video-container')[0];
+import { convertToSecond } from "./utils";
 
 function createFloatCard ({ start, end }) {
   const videoContainer = document.getElementsByClassName('html5-video-container')[0];
@@ -26,7 +27,7 @@ function createFloatCard ({ start, end }) {
     .float-card>.button {
       font-size: 12px; 
       margin-left: 78%; 
-      margin-top: 2%
+      margin-top: 2%;
     }
   `
 
@@ -104,8 +105,105 @@ function readComments(commentsTimed, { start, end }) {
   }
 }
 
+function createEasyStartCard(commentsToDisplay) {
+  // const videoContainer = document.getElementsByClassName('html5-video-container')[0];
+  const EASYSTARTCARD_TITLE = 'Easy Start';
+  const EASYSTARTTEXTS = ['__looks like__&nbsp;&nbsp;&nbsp;', 'The color of __ is __&nbsp;&nbsp;&nbsp;', 'The __ is __'];
+
+  const styles = `
+    .easy-start-card {
+      background-color: rgb(229, 229, 229); 
+      width: 35%; height: 80%; padding: 1.5%; 
+      margin-bottom: 2%; 
+      border-radius: 5%;
+    }
+    .easy-start-card>.easy-start {
+      margin: 3%;
+    }
+    .easy-start-card>.comments {
+      margin-top: 3%;
+      margin-left: 3%;
+      margin-right: 3%;
+    }
+    .single-timestamp {
+      color: blue;
+      text-decoration: underline;
+    }
+  `
+
+  const title1 = document.createElement('h2');
+  title1.classList.add('title1');
+  title1.appendChild(document.createTextNode(EASYSTARTCARD_TITLE));
+
+  const easyStart = document.createElement('div');
+  easyStart.classList.add('easy-start');
+
+  for (const text of EASYSTARTTEXTS) {
+    const spanElement = document.createElement('span');
+    spanElement.innerHTML = text;
+    easyStart.appendChild(spanElement);
+  }
+
+  const title2 = document.createElement('h2');
+  title2.classList.add('title2');
+  title2.append("See what others are talking about...");
+  
+  const comments = document.createElement('ul');
+  comments.classList.add('comments');
+
+  for (let i in commentsToDisplay) {
+    const curComment = commentsToDisplay[i];
+    const singleComment = document.createElement('li');
+    // Add all timestamps 
+    const numOfTimestamps = curComment.timestamps.length;
+    for (let j = 0; j < numOfTimestamps; j++) {
+      const curTimestamp = curComment.timestamps[j];
+      const singleTimestamp = document.createElement('span');
+      singleTimestamp.classList.add('single-timestamp');
+      singleComment.appendChild(singleTimestamp);
+      singleTimestamp.innerHTML = curTimestamp;
+
+      if (j == curComment.timestamps.length - 1) {
+        singleTimestamp.insertAdjacentHTML(
+          'afterend',
+          '&nbsp;&nbsp;' + curComment.text
+        );
+      } else {
+        // if it is not the last time stamp, add a space after it 
+        singleTimestamp.insertAdjacentHTML(
+          'afterend',
+          '&nbsp;'
+        );
+      }
+
+      singleTimestamp.onclick = function (e) {
+        const youtubeVideo = <HTMLVideoElement>(
+          document.getElementsByTagName('Video')[0]
+        );
+        window.scrollTo(0, 0);
+        console.log(convertToSecond(curTimestamp));
+        youtubeVideo.currentTime = convertToSecond(curTimestamp);
+        youtubeVideo.play();
+      }
+    }
+
+    comments.appendChild(singleComment);
+  }
+
+  const addCommentSection = document.querySelector('ytd-comments-header-renderer.style-scope.ytd-item-section-renderer');
+  const easyStartCard = document.createElement('div');
+  easyStartCard.classList.add('easy-start-card');
+  easyStartCard.append(title1, easyStart, title2, comments);
+  addCommentSection.appendChild(easyStartCard);
+
+  const styleSheet = document.createElement("style");
+  styleSheet.innerText = styles;
+  document.head.appendChild(styleSheet);
+}
+
 export {
   createFloatCard,
   deleteFloatCard,
   readComments,
+  createEasyStartCard,
 }

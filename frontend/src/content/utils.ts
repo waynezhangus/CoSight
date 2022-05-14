@@ -11,6 +11,11 @@ function getVideoId(url) {
   }
 }
 
+function convertToSecond(timestamp_string) {
+  const min_second_arr = timestamp_string.split(':')
+  return parseInt(min_second_arr[0]) * 60 + parseInt(min_second_arr[1])
+}
+
 function waitForPromise(selector: string, parent: Element) {
   return new Promise<Element>(resolve => {
     let target = parent.querySelector(selector)
@@ -34,4 +39,5 @@ function waitForPromise(selector: string, parent: Element) {
 export {
   getVideoId,
   waitForPromise,
+  convertToSecond,
 };
