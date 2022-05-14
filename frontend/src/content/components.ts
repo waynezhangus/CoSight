@@ -1,3 +1,6 @@
+//const videoContainer = document.getElementsByClassName('html5-video-container')[0];
+import { stampToSecond } from "./utils";
+
 function createFloatCard ({ start, end }) {
   const videoContainer = document.querySelector('.html5-video-container');
   const FLOATCARD_TITLE = 'Write a quick comment on what you see to help people!';
@@ -24,7 +27,7 @@ function createFloatCard ({ start, end }) {
     .float-card>.button {
       font-size: 12px; 
       margin-left: 78%; 
-      margin-top: 2%
+      margin-top: 2%;
     }
   `
 
@@ -90,8 +93,88 @@ function readComments(commentsTimed, { start, end }) {
   }
 }
 
+function createEasyStartCard(comments) {
+  const video = document.getElementsByTagName('video')[0];
+  const STARTCARD_TITLE1 = 'Easy Start';
+  const STARTCARD_GUIDES = ['__looks like__', 'The color of __ is __', 'The __ is __'];
+  const STARTCARD_TITLE2 = 'See what others are talking about...';
+
+  const styles = `
+    .easy-start-card {
+      background-color: rgb(229, 229, 229); 
+      width: 35%; height: 80%; padding: 1.5%; 
+      margin-bottom: 2%; 
+      border-radius: 5%;
+    }
+    .easy-start-card .start-guide {
+      margin-top: 3%;
+      margin-bottom: 3%;
+    }
+    .easy-start-card>.comments {
+      margin-top: 3%;
+      margin-left: 3%;
+      margin-right: 3%;
+    }
+    .easy-start-card .timestamp {
+      color: blue;
+      text-decoration: underline;
+    }
+    .easy-start-card span{
+      margin-right: 2%
+    }
+  `
+
+  const title1 = document.createElement('h2');
+  title1.classList.add('title');
+  title1.append(STARTCARD_TITLE1);
+
+  const guideContainer = document.createElement('div');
+  guideContainer.classList.add('start-guide');
+
+  STARTCARD_GUIDES.forEach(text => {
+    const guideElement = document.createElement('span');
+    guideElement.append(text);
+    guideContainer.appendChild(guideElement);
+  })
+
+  const title2 = document.createElement('h2');
+  title2.classList.add('title');
+  title2.append(STARTCARD_TITLE2);
+  
+  const commentContainer = document.createElement('ul');
+  commentContainer.classList.add('comments');
+
+  comments.forEach(comment => {
+    const commentElement = document.createElement('li');
+    comment.timestamps.forEach(timestamp => {
+      const stampElement = document.createElement('span');
+      stampElement.classList.add('timestamp');
+      stampElement.append(timestamp);
+      stampElement.onclick = () => {
+        window.scrollTo(0, 0);
+        video.currentTime = stampToSecond(timestamp);
+        video.play();
+      }
+      commentElement.appendChild(stampElement);
+    })
+    commentElement.append(comment.text);
+    commentContainer.appendChild(commentElement);
+  })
+
+  const addCommentSection = document.querySelector('ytd-comments-header-renderer.style-scope.ytd-item-section-renderer');
+  const easyStartCard = document.createElement('div');
+  easyStartCard.classList.add('easy-start-card');
+  easyStartCard.append(title1, guideContainer, title2, commentContainer);
+  addCommentSection.appendChild(easyStartCard);
+
+  const styleSheet = document.createElement("style");
+  styleSheet.innerText = styles;
+  document.head.appendChild(styleSheet);
+}
+
 export {
   createFloatCard,
   deleteFloatCard,
   readComments,
+  createEasyStartCard,
 }
