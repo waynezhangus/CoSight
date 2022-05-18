@@ -1,4 +1,3 @@
-//const videoContainer = document.getElementsByClassName('html5-video-container')[0];
 import { stampToSecond } from "./utils";
 
 function createFloatCard ({ start, end }) {
@@ -171,7 +170,6 @@ function createEasyStartCard(comments) {
   styleSheet.innerText = styles;
   document.head.appendChild(styleSheet);
 }
-
 
 function createRangeBar(blackRanges) {
   const palette = ['#e3f2fd', '#bbdefb', '#90caf9', '#64b5f6', '#42a5f5', '#2196f3', '#1e88e5', '#1976d2', '#1565c0', '#0d47a1'];
