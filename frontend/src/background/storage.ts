@@ -1,31 +1,28 @@
-export interface LocalStorage {
-  videos?: LocalStorageVideos
+interface LocalStorage {
+  videos?: LocalStorageVideo
   options?: LocalStorageOptions
 }
 
-export interface LocalStorageVideos {
+interface LocalStorageVideo {
   videoId: string
   status: 'null' | 'processing' | 'available'
 }
 
-export interface LocalStorageOptions {
+interface LocalStorageOptions {
   mode: boolean
 }
 
-export type LocalStorageKeys = keyof LocalStorage
+type LocalStorageKeys = keyof LocalStorage
 
-export function setStoredCities(videos: LocalStorageVideos): Promise<void> {
-  const vals: LocalStorage = {
-    videos,
-  }
+function setStoredVideo(videos: LocalStorageVideo): Promise<void> {
   return new Promise((resolve) => {
-    chrome.storage.local.set(vals, () => {
+    chrome.storage.local.set({videos}, () => {
       resolve()
     })
   })
 }
 
-export function getStoredCities(): Promise<LocalStorageVideos> {
+function getStoredVideo(): Promise<LocalStorageVideo> {
   const keys: LocalStorageKeys[] = ['videos']
   return new Promise((resolve) => {
     chrome.storage.local.get(keys, (res: LocalStorage) => {
@@ -34,22 +31,27 @@ export function getStoredCities(): Promise<LocalStorageVideos> {
   })
 }
 
-export function setStoredOptions(options: LocalStorageOptions): Promise<void> {
-  const vals: LocalStorage = {
-    options,
-  }
+function setStoredOptions(options: LocalStorageOptions): Promise<void> {
   return new Promise((resolve) => {
-    chrome.storage.local.set(vals, () => {
+    chrome.storage.sync.set({options}, () => {
       resolve()
     })
   })
 }
 
-export function getStoredOptions(): Promise<LocalStorageOptions> {
+function getStoredOptions(): Promise<LocalStorageOptions> {
   const keys: LocalStorageKeys[] = ['options']
   return new Promise((resolve) => {
-    chrome.storage.local.get(keys, (res: LocalStorage) => {
+    chrome.storage.sync.get(keys, (res: LocalStorage) => {
       resolve(res.options)
     })
   })
+}
+
+export {
+  LocalStorage,
+  LocalStorageVideo,
+  LocalStorageOptions,
+  setStoredVideo,
+  getStoredVideo,
 }

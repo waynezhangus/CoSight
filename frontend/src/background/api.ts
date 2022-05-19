@@ -1,6 +1,6 @@
 const API_URL = 'http://localhost:5000/api/youtube/'
 
-export interface VideoData {
+interface VideoData {
   videoId: string
   ccKeywords?: {
     text: string
@@ -21,7 +21,7 @@ export interface VideoData {
   status: 'null' | 'processing' | 'available'
 }
 
-export async function getVideo(videoId: string): Promise<VideoData> {
+async function getVideo(videoId: string): Promise<VideoData> {
   const res = await fetch(`${API_URL}${videoId}`, {
     method: 'GET',
     mode: 'cors',
@@ -33,7 +33,7 @@ export async function getVideo(videoId: string): Promise<VideoData> {
   return data
 }
 
-export async function addVideo(videoId: string): Promise<VideoData> {
+async function addVideo(videoId: string): Promise<VideoData> {
   const res = await fetch(API_URL, {
     method: 'POST',
     headers: {
@@ -46,4 +46,10 @@ export async function addVideo(videoId: string): Promise<VideoData> {
   }
   const data: VideoData = await res.json()
   return data
+}
+
+export {
+  VideoData,
+  getVideo,
+  addVideo,
 }

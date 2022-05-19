@@ -1,15 +1,24 @@
 import { getVideo, addVideo } from '../background/api'
-import { getVideoId, waitForPromise, stampToSecond } from './utils'
+import { getVideoId, waitForPromise } from './utils'
 import { createFloatCard, 
-        deleteFloatCard, 
         readComments, 
-        createEasyStartCard, 
+        createStartCard, 
+        deleteStartCard,
         createRangeBar } from './components'
+import { LocalStorageOptions } from '../background/storage';
+
+let options: LocalStorageOptions;
+
+chrome.storage.sync.get('options', (data) => options = data.options);
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'sync' && changes.options?.newValue) {
+    options = changes.options.newValue;
+  }
+});
 
 // Get the id of the current Youtube video
 const video_id = getVideoId(window.location.href);
-
-let mode = false;
 
 getVideo(video_id).then((videoData) => {
 
@@ -22,86 +31,88 @@ getVideo(video_id).then((videoData) => {
 
   let prevSeg = undefined;
   let isSeeking = false;
+  let canPause = false;
 
   video.onseeking = () => {
     isSeeking = true;
   }
 
+  const scrubber = document.querySelector('.ytp-scrubber-container');
+    const tip = document.createElement("img");
+    Object.assign(tip, {
+      className: 'video-tip',
+      src: 'static/icon',
+      height: 120, // pixels
+      width: 160, // pixels
+      alt: 'tip',
+      onclick: () => {}
+    })
+    scrubber.appendChild(tip);
+
   video.ontimeupdate = () => {
+    const card = document.querySelector('.float-card');
     let curTime = video.currentTime;
     let curSeg = videoSeg.find(({ start, end }) => {
       return (start <= curTime) && (curTime < end);
     });
 
-    // when the user is moving/skipping to a new timestamp
+    // when the user is skipping to a new timestamp
     if (isSeeking) {
       prevSeg = curSeg;
+      if (card) card.remove();
       isSeeking = false;
       return;
     }
 
-    if (!mode) {
-      if (curSeg != prevSeg) {
-        if (!prevSeg) {
-          if (!curSeg.hasVisited) {
-            createFloatCard(curSeg);
-            curSeg.hasVisited = true;
-          }     
-        } else if (!curSeg) {
-          deleteFloatCard();
-        } else {
-          deleteFloatCard();
-          if (!curSeg.hasVisited) {
-            createFloatCard(curSeg);
-            curSeg.hasVisited = true;
-          } 
+    if (typeof curSeg !== "undefined") {
+      const {start, end, hasVisited} = curSeg;
+      if (!hasVisited) {
+        canPause = true;
+        if (!card) createFloatCard(start, end);
+        else if (prevSeg !== curSeg) {
+          const text = `From ${start} to ${end}`;
+          card.querySelector('.time-text').innerHTML = text;
+          if (prevSeg) prevSeg.hasVisited = true;
         }
+      } else {     
+        if (card) card.remove();
       }
     } else {
-      if (curSeg != prevSeg) {
-        if (prevSeg) {
-          if (!prevSeg.hasVisited) {
-            readComments(commentsTimed, prevSeg);
-            prevSeg.hasVisited = true;
-          }
-        } 
-      }
+      if (prevSeg) prevSeg.hasVisited = true;
+      if (card) card.remove();
+    }
+    // accessibility mode only
+    if (options.mode && (prevSeg !== curSeg) && canPause && prevSeg) {
+      readComments(commentsTimed, prevSeg);
+      canPause = false;
     }
     prevSeg = curSeg;
   }
 
-  let observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (!mutation.addedNodes) return
+  const COMMENT_HOLDER = 'What images are the most significant to the understanding and appreciation of the video?';
 
-      for (let i = 0; i < mutation.addedNodes.length; i++) {
-        // do things to your newly added nodes here
-        let node = mutation.addedNodes[i]
-
-        if (node['id'] === 'contenteditable-root') {
-
-          createEasyStartCard(commentsTimed.slice(0, 5));
-
-          let comment = document.getElementById('contenteditable-root');
-
-          node['ariaLabel'] =
-            'What images are the most significant to the understanding and appreciation of the video?';
-          // node.classList.push()
-          comment.onkeypress = function (e) {
-            console.log('key pressed!')
-            console.log(comment.textContent)
-          }
-        }
-      }
-    })
+  waitForPromise('#primary #contenteditable-root', document.body).then(edit => {
+    const holder = document.querySelector('#primary #placeholder-area');
+    const dialog = document.querySelector('#primary #comment-dialog');
+    createStartCard(commentsTimed.slice(0, 5), dialog);
+    holder.addEventListener('click', () => createStartCard(commentsTimed.slice(0, 5), dialog));
+    dialog.querySelector('#buttons').addEventListener('click', deleteStartCard);
+    document.querySelector('#chevron').addEventListener('click', deleteStartCard);
+    edit.setAttribute('aria-label', COMMENT_HOLDER);
   })
 
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    characterData: false,
+  waitForPromise('#secondary #contenteditable-root', document.body).then(edit => {
+    const holder = document.querySelector('#secondary #placeholder-area');
+    const dialog = document.querySelector('#secondary #comment-dialog');
+    createStartCard(commentsTimed.slice(0, 5), dialog);
+    holder.addEventListener('click', () => createStartCard(commentsTimed.slice(0, 5), dialog));
+    dialog.querySelector('#buttons').addEventListener('click', deleteStartCard);
+    const panel = document.querySelector("ytd-engagement-panel-section-list-renderer[target-id='engagement-panel-comments-section']")
+    panel.querySelector('#visibility-button').addEventListener('click', deleteStartCard);
+    edit.setAttribute('aria-label', COMMENT_HOLDER);
   })
+
+
 })
 
 

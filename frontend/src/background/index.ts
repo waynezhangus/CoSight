@@ -1,16 +1,14 @@
-import {
-  getStoredCities,
-  getStoredOptions,
-  setStoredCities,
-  setStoredOptions,
-} from './storage'
+
 import {
   getVideo,
   addVideo,
 } from './api' 
+import { LocalStorageOptions } from './storage';
+
+let options: LocalStorageOptions = {
+  mode: false,
+};
 
 chrome.runtime.onInstalled.addListener(() => {
-  setStoredOptions({
-    mode: false
-  })
+  chrome.storage.sync.set({ options })
 })
