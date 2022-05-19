@@ -3,10 +3,9 @@ function getVideoId(url) {
   const pathname = urlObject.pathname;
   if (pathname.startsWith("/clip")) {
     //return document.querySelector("meta[itemprop='videoId']").content;
+  } else if (pathname.startsWith("/shorts")) {
+    return pathname.slice(8);
   } else {
-    if (pathname.startsWith("/shorts")) {
-      return pathname.slice(8);
-    }
     return urlObject.searchParams.get("v");
   }
 }
@@ -29,17 +28,36 @@ function waitForPromise(selector: string, parent: Element) {
       resolve(target)
     } else {
       const observer = new MutationObserver(mutations => {
-      target = parent.querySelector(selector)
-      if(target) {
-        resolve(target)
-        observer.disconnect()
-      }
+        target = parent.querySelector(selector)
+        if(target) {
+          resolve(target)
+          observer.disconnect()
+        }
       })
       observer.observe(parent, {
         childList: true,  subtree: true
       })
     }
   })
+}
+
+function isVideoLoaded() {
+  const videoId = getVideoId(window.location.href);
+  return (
+    document.querySelector(`ytd-watch-flexy[video-id='${videoId}']`) !== null ||
+    // mobile: no video-id attribute
+    document.querySelector('#player[loading="false"]:not([hidden])') !== null
+  );
+}
+
+function domReady(callback) {
+  if (document.readyState === "complete") {
+    callback();
+  } else {
+    window.addEventListener("load", callback, {
+      once: true,
+    });
+  }
 }
 
 export {

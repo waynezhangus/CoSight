@@ -1,7 +1,7 @@
 import { stampToSecond } from "./utils";
 import bootstrap from 'bootstrap';
 
-function createFloatCard ({ start, end }) {
+function createFloatCard (start, end) {
   const videoContainer = document.querySelector('.html5-video-container');
   const FLOATCARD_TITLE = 'Write a quick comment on what you see to help people!';
   const FLOATCARD_SEG = `From ${start} to ${end}`;
@@ -36,7 +36,7 @@ function createFloatCard ({ start, end }) {
   title.append(FLOATCARD_TITLE);
 
   const seg = document.createElement('p');
-  seg.classList.add('text')
+  seg.classList.add('time-text', 'text')
   seg.append(FLOATCARD_SEG);
 
   const jump = document.createElement('button');
@@ -54,13 +54,6 @@ function createFloatCard ({ start, end }) {
   const styleSheet = document.createElement("style");
   styleSheet.innerText = styles;
   document.head.appendChild(styleSheet);
-}
-
-function deleteFloatCard () {
-  console.log('delete')
-  const videoContainer = document.querySelector('.html5-video-container');
-  const floatCard = videoContainer.querySelector('.float-card');
-  floatCard ? videoContainer.removeChild(floatCard) : null;
 }
 
 function readComments(commentsTimed, { start, end }) {
@@ -93,7 +86,7 @@ function readComments(commentsTimed, { start, end }) {
   }
 }
 
-function createEasyStartCard(comments) {
+function createStartCard(comments, parent) {
   const video = document.getElementsByTagName('video')[0];
   const STARTCARD_TITLE1 = 'Easy Start';
   const STARTCARD_GUIDES = ['__looks like__', 'The color of __ is __', 'The __ is __'];
@@ -161,15 +154,21 @@ function createEasyStartCard(comments) {
     commentContainer.appendChild(commentElement);
   })
 
-  const addCommentSection = document.querySelector('ytd-comments-header-renderer.style-scope.ytd-item-section-renderer');
   const easyStartCard = document.createElement('div');
   easyStartCard.classList.add('easy-start-card');
   easyStartCard.append(title1, guideContainer, title2, commentContainer);
-  addCommentSection.appendChild(easyStartCard);
+  parent.insertAdjacentElement('beforeend', easyStartCard);
 
   const styleSheet = document.createElement("style");
   styleSheet.innerText = styles;
   document.head.appendChild(styleSheet);
+}
+
+function deleteStartCard() {
+  const cards = document.querySelectorAll('.easy-start-card')
+  cards.forEach(card => {
+    card.remove();
+  })
 }
 
 function createRangeBar(blackRanges) {
@@ -217,7 +216,7 @@ function createRangeBar(blackRanges) {
   document.head.appendChild(styleSheet);
 }
 
-function createAccordion(commentsTimed) {
+function createAccordion(commentsTimed, parent) {
   const accordionItem = document.createElement('div');
   accordionItem.classList.add("accordion-item");
 
@@ -277,8 +276,7 @@ function createAccordion(commentsTimed) {
   accordion.setAttribute("id", "accordionExample");
   accordion.append(accordionItem);
 
-  const commentSection = document.querySelector('#comments');
-  commentSection.insertAdjacentElement('beforebegin', accordion);
+  parent.insertAdjacentElement('beforebegin', accordion);
 
   // add all the comments
   commentsTimed.forEach(comment => {
@@ -297,9 +295,9 @@ function createAccordion(commentsTimed) {
 
 export {
   createFloatCard,
-  deleteFloatCard,
   readComments,
-  createEasyStartCard,
+  createStartCard,
+  deleteStartCard,
   createRangeBar,
-  createAccordion, 
+  createAccordion,
 }
