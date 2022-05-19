@@ -1,4 +1,5 @@
 import { stampToSecond } from "./utils";
+import bootstrap from 'bootstrap';
 
 function createFloatCard ({ start, end }) {
   const videoContainer = document.querySelector('.html5-video-container');
@@ -216,10 +217,89 @@ function createRangeBar(blackRanges) {
   document.head.appendChild(styleSheet);
 }
 
+function createAccordion(commentsTimed) {
+  const accordionItem = document.createElement('div');
+  accordionItem.classList.add("accordion-item");
+
+  const accordionHeader = document.createElement('h2');
+  accordionHeader.classList.add("accordion-header");
+  accordionHeader.setAttribute('id', 'headingOne');
+
+  const accordionButton = document.createElement('button');
+  accordionButton.classList.add("accordion-button");
+  accordionButton.classList.add("collapsed");
+  accordionButton.setAttribute('type', "button");
+  accordionButton.setAttribute('data-bs-toggle', "collapse");
+  accordionButton.setAttribute('data-bs-target', "#collapseOne");
+  accordionButton.setAttribute('aria-expanded', "false");
+  accordionButton.setAttribute('aria-controls', "collapseOne");
+  accordionButton.append("Accessible Comments");
+
+  accordionHeader.append(accordionButton);
+
+  const accordionCollapse = document.createElement('div');
+  accordionCollapse.classList.add("accordion-collapse");
+  accordionCollapse.classList.add("collapse");
+  accordionCollapse.setAttribute('id', "collapseOne");
+  accordionCollapse.setAttribute('aria-labelledby', "headingOne");
+  accordionCollapse.setAttribute('data-bs-parent', "#accordionExample");
+
+  const accordionBody = document.createElement('div');
+  accordionBody.classList.add("accordion-body");
+
+  // collect all the timestamps
+  let allTimestamps = [];
+  commentsTimed.forEach(comment => {
+    comment.timestamps.forEach(timestamp => {
+      if (!allTimestamps.includes(timestamp)) {
+        allTimestamps.push(timestamp);
+      }
+    })
+  })
+
+  // sort these timestamps
+  allTimestamps.sort(function(a, b) {return stampToSecond(a) - stampToSecond(b)});
+
+  // create the structure
+  allTimestamps.forEach(timestamp => {
+    const timeHeader = document.createElement('h4');
+    timeHeader.append(timestamp);
+    const commentList = document.createElement('ul');
+    commentList.setAttribute('id', 'timestamp-' + timestamp);
+    accordionBody.append(timeHeader, commentList);
+  })
+
+  accordionCollapse.append(accordionBody);
+  accordionItem.append(accordionHeader, accordionCollapse);
+
+  const accordion = document.createElement('div');
+  accordion.classList.add('accordion');
+  accordion.setAttribute("id", "accordionExample");
+  accordion.append(accordionItem);
+
+  const commentSection = document.querySelector('#comments');
+  commentSection.insertAdjacentElement('beforebegin', accordion);
+
+  // add all the comments
+  commentsTimed.forEach(comment => {
+    comment.timestamps.forEach(timestamp => {
+      const accordionComment = document.createElement('li');
+      accordionComment.append(comment.text);
+
+      console.log(comment);
+      console.log('timestamp-' + timestamp);
+      const commentList = document.getElementById('timestamp-' + timestamp);
+      commentList.append(accordionComment);
+      console.log(commentList);
+    })
+  })
+}
+
 export {
   createFloatCard,
   deleteFloatCard,
   readComments,
   createEasyStartCard,
-  createRangeBar
+  createRangeBar,
+  createAccordion, 
 }

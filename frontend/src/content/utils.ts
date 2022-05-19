@@ -16,6 +16,12 @@ function stampToSecond(timestamp) {
   return parseInt(min_second_arr[0]) * 60 + parseInt(min_second_arr[1])
 }
 
+// Extract timestamps from a comment
+// Assume the videos do not exceed 1 hour
+function extractTimestamp(comment) {
+  return comment.match(/[0-5]?[0-9]:[0-5][0-9]/g);
+}
+
 function waitForPromise(selector: string, parent: Element) {
   return new Promise<Element>(resolve => {
     let target = parent.querySelector(selector)
@@ -40,4 +46,5 @@ export {
   getVideoId,
   waitForPromise,
   stampToSecond,
+  extractTimestamp,
 };
