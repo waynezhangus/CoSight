@@ -1,5 +1,4 @@
 import { stampToSecond } from "./utils";
-import bootstrap from 'bootstrap';
 
 function createFloatCard (start, end) {
   const videoContainer = document.querySelector('.html5-video-container');
@@ -217,31 +216,58 @@ function createRangeBar(blackRanges) {
 }
 
 function createAccordion(commentsTimed, parent) {
-  const accordionItem = document.createElement('div');
-  accordionItem.classList.add("accordion-item");
+  const styles = `
+    .accordion>.accordion-button {
+      background-color: #eee;
+      color: #444;
+      cursor: pointer;
+      padding: 18px;
+      width: 100%;
+      border: none;
+      text-align: left;
+      outline: none;
+      font-size: 15px;
+      transition: 0.4s;
+    }
 
-  const accordionHeader = document.createElement('h2');
-  accordionHeader.classList.add("accordion-header");
-  accordionHeader.setAttribute('id', 'headingOne');
+    .accordion>.active, .accordion>.accordion-button:hover {
+      background-color: #ccc;
+    }
+
+    .accordion>.accordion-button:after {
+      content: '\\002B';
+      color: #777;
+      font-weight: bold;
+      float: right;
+      margin-left: 5px;
+    }
+
+    .accordion>.active:after {
+      content: '\\2212';
+    }
+
+    .accordion>.accordion-body {
+      padding: 0px 18px 10px;
+      background-color: white;
+      display: none;
+      overflow: hidden;
+    }
+
+    .accordion .time-header {
+      margin-top: 15px;
+      margin-bottom: 5px;
+    }
+
+    .accordion .accordion-comment {
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+  `
 
   const accordionButton = document.createElement('button');
   accordionButton.classList.add("accordion-button");
-  accordionButton.classList.add("collapsed");
-  accordionButton.setAttribute('type', "button");
-  accordionButton.setAttribute('data-bs-toggle', "collapse");
-  accordionButton.setAttribute('data-bs-target', "#collapseOne");
-  accordionButton.setAttribute('aria-expanded', "false");
-  accordionButton.setAttribute('aria-controls', "collapseOne");
   accordionButton.append("Accessible Comments");
-
-  accordionHeader.append(accordionButton);
-
-  const accordionCollapse = document.createElement('div');
-  accordionCollapse.classList.add("accordion-collapse");
-  accordionCollapse.classList.add("collapse");
-  accordionCollapse.setAttribute('id', "collapseOne");
-  accordionCollapse.setAttribute('aria-labelledby', "headingOne");
-  accordionCollapse.setAttribute('data-bs-parent', "#accordionExample");
 
   const accordionBody = document.createElement('div');
   accordionBody.classList.add("accordion-body");
@@ -261,20 +287,18 @@ function createAccordion(commentsTimed, parent) {
 
   // create the structure
   allTimestamps.forEach(timestamp => {
-    const timeHeader = document.createElement('h4');
+    const timeHeader = document.createElement('h1');
+    timeHeader.classList.add('time-header');
     timeHeader.append(timestamp);
     const commentList = document.createElement('ul');
+    commentList.classList.add('comment-list');
     commentList.setAttribute('id', 'timestamp-' + timestamp);
     accordionBody.append(timeHeader, commentList);
   })
 
-  accordionCollapse.append(accordionBody);
-  accordionItem.append(accordionHeader, accordionCollapse);
-
   const accordion = document.createElement('div');
   accordion.classList.add('accordion');
-  accordion.setAttribute("id", "accordionExample");
-  accordion.append(accordionItem);
+  accordion.append(accordionButton, accordionBody);
 
   parent.insertAdjacentElement('beforebegin', accordion);
 
@@ -282,6 +306,7 @@ function createAccordion(commentsTimed, parent) {
   commentsTimed.forEach(comment => {
     comment.timestamps.forEach(timestamp => {
       const accordionComment = document.createElement('li');
+      accordionComment.classList.add('accordion-comment');
       accordionComment.append(comment.text);
 
       console.log(comment);
@@ -291,6 +316,29 @@ function createAccordion(commentsTimed, parent) {
       console.log(commentList);
     })
   })
+
+  // add interactions
+  let acc = document.getElementsByClassName("accordion-button");
+  let i;
+  for (i = 0; i < acc.length; i++) {
+    acc[i].addEventListener("click", function() {
+      /* Toggle between adding and removing the "active" class,
+      to highlight the button that controls the panel */
+      this.classList.toggle("active");
+
+      /* Toggle between hiding and showing the active panel */
+      var panel = this.nextElementSibling;
+      if (panel.style.display === "block") {
+        panel.style.display = "none";
+      } else {
+        panel.style.display = "block";
+      }
+    });
+  }
+
+  const styleSheet = document.createElement("style");
+  styleSheet.innerText = styles;
+  document.head.appendChild(styleSheet);
 }
 
 export {

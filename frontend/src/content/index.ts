@@ -7,8 +7,6 @@ import { createFloatCard,
         createRangeBar,
         createAccordion } from './components'
 import { LocalStorageOptions } from '../background/storage';
-import 'bootstrap/dist/css/bootstrap.min.css'
-import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 
 let options: LocalStorageOptions;
 
