@@ -117,7 +117,7 @@ function createStartCard(comments, parent) {
     }
   `
 
-  const title1 = document.createElement('h2');
+  const title1 = document.createElement('h3');
   title1.classList.add('title');
   title1.append(STARTCARD_TITLE1);
 
@@ -130,7 +130,7 @@ function createStartCard(comments, parent) {
     guideContainer.appendChild(guideElement);
   })
 
-  const title2 = document.createElement('h2');
+  const title2 = document.createElement('h3');
   title2.classList.add('title');
   title2.append(STARTCARD_TITLE2);
   

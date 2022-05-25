@@ -96,7 +96,7 @@ const addVideo = asyncHandler( async (req, res) => {
 const getVideo = asyncHandler( async (req, res) => {
   const video = await Video.find({videoId: req.params.id})
   if (video.length == 0) {
-    res.status(200).json({status: null})
+    res.status(404)
   }
   res.status(200).json(video[0])
 })
