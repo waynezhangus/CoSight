@@ -47,25 +47,6 @@ function waitForPromise(selector: string, parent: Element) {
   })
 }
 
-function isVideoLoaded() {
-  const videoId = getVideoId(window.location.href);
-  return (
-    document.querySelector(`ytd-watch-flexy[video-id='${videoId}']`) !== null ||
-    // mobile: no video-id attribute
-    document.querySelector('#player[loading="false"]:not([hidden])') !== null
-  );
-}
-
-function domReady(callback) {
-  if (document.readyState === "complete") {
-    callback();
-  } else {
-    window.addEventListener("load", callback, {
-      once: true,
-    });
-  }
-}
-
 export {
   getVideoId,
   waitForPromise,

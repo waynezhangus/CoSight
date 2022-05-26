@@ -1,4 +1,5 @@
 import { secondToStamp, stampToSecond, waitForPromise } from "./utils";
+import * as Tone from 'tone'
 
 function createFloatCard (start, end) {
   if (document.querySelector('.float-tip')) {
@@ -108,8 +109,9 @@ function readComments(commentsTimed, { start, end }) {
     Boolean(timestamps.find((timestamp) => (start <= timestamp && timestamp < end)));
   });
 
-  let audio = new Audio('https://media.geeksforgeeks.org/wp-content/uploads/20190531135120/beep.mp3');
-  audio.play();
+  const synth = new Tone.Synth().toDestination();
+  //play a middle 'C' for the duration of an 8th note
+  synth.triggerAttackRelease("C4", "8n");
 
   const video = document.getElementsByTagName('video')[0];
   video.pause();
