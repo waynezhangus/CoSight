@@ -1,22 +1,43 @@
 import { secondToStamp, stampToSecond, waitForPromise } from "./utils";
 
 function createFloatCard (start, end) {
+  if (document.querySelector('.float-tip')) {
+    document.querySelector<HTMLElement>('.float-tip').style.display = 'block';
+    return;
+  }
   const video = document.getElementsByTagName('video')[0];
   const videoContainer = document.querySelector('.html5-video-player');
   const FLOATCARD_TITLE = 'Write a quick comment on what you see to help people!';
   const FLOATCARD_SEG = `From ${secondToStamp(start)} to ${secondToStamp(end)}`;
-  const FLOATCARD_BUTTON = 'Go';
   const styles = `
+    .float-tip {
+      z-index: 1000;
+      position: absolute; 
+      height: 0;
+      width: 3%; 
+      padding-bottom: 3%;
+      top: 50%;
+      left: 2%;
+    }
+
+    .float-tip img {
+      z-index: 1000;
+      position: absolute;
+      height: 100%; 
+      width: 100%;
+      border-radius: 50%;
+    }
+
     .float-card {
       position: absolute; 
       z-index: 1000; 
-      height: 22%; 
+      height: auto; 
       width: 17%; 
       top: 55%; 
       left: 3%; 
       padding: 1.5%;
       background-color: #EEEEEE; 
-      border-radius: 5%;
+      border-radius: 0.5em;
     }
     .float-card>.text {
       color: #000000;
@@ -24,18 +45,44 @@ function createFloatCard (start, end) {
     .float-card>.time-text {
       margin-top: 4%; 
     }
-    .float-card>.button {
-      position: absolute;
-      background-color: #bbdefb;
-      height: 15%; 
-      width: 20%;
-      right: 10%; 
-      bottom: 5%;
-      border-radius: 5%;
-      border-style: none;
-      font-size: 1em;
-    }
   `
+  
+  const img = document.createElement("img");
+  Object.assign(img, {
+    src: chrome.runtime.getURL('icon.png'), alt: 'tip',  
+    onclick: handleClick,
+    onmouseover: handleHover,
+    onmouseout: handleHover,
+  });
+  const tip = document.createElement('div');
+  tip.classList.add('float-tip');
+  tip.appendChild(img);
+
+  function handleClick(event) {
+    const zoom = videoContainer.querySelector<HTMLElement>('.ytp-fullscreen-button');
+    if(zoom.getAttribute('title') === 'Exit full screen (f)') zoom.click();
+    document.querySelector<HTMLElement>('#chevron').click();
+    waitForPromise('#secondary #placeholder-area', document.body).then(holder => holder.click());
+    waitForPromise('#secondary #contenteditable-root', document.body).then(edit => {
+      edit.append(' ' + secondToStamp(video.currentTime))
+      edit.focus();
+    });
+    setTimeout(() => { 
+      window.scroll(0, 0); 
+    }, 1000);
+  }
+
+  function handleHover(event) {
+    const card = document.querySelector<HTMLElement>('.float-card');
+    if (card) {
+      if (event.type == 'mouseover') {
+        card.style.display = 'block';
+      }
+      if (event.type == 'mouseout') {
+        card.style.display = 'none';
+      }
+    }
+  }
 
   const title = document.createElement('p');
   title.classList.add('text');
@@ -45,27 +92,11 @@ function createFloatCard (start, end) {
   seg.classList.add('time-text', 'text')
   seg.append(FLOATCARD_SEG);
 
-  const jump = document.createElement('button');
-  jump.classList.add('button')
-  jump.append(FLOATCARD_BUTTON);
-  jump.onclick = () => {
-    const zoom = videoContainer.querySelector<HTMLElement>('.ytp-fullscreen-button');
-    if(zoom.getAttribute('title') === 'Exit full screen (f)') zoom.click();
-    document.querySelector<HTMLElement>('#chevron').click();
-    waitForPromise('#secondary #placeholder-area', document.body).then(holder => holder.click());
-    waitForPromise('#secondary #contenteditable-root', document.body).then(edit => {
-      edit.append(secondToStamp(video.currentTime))
-      edit.focus();
-    });
-    setTimeout(() => { 
-      window.scroll(0, 0); 
-    }, 1000);
-  };
-
   const floatCard = document.createElement('div');
   floatCard.classList.add('float-card');
-  floatCard.append(title, seg, jump);
-  videoContainer.appendChild(floatCard);
+  floatCard.append(title, seg);
+  floatCard.style.display = 'none';
+  videoContainer.append(floatCard, tip);
 
   const styleSheet = document.createElement("style");
   styleSheet.innerText = styles;
@@ -115,7 +146,7 @@ function createStartCard(comments, parent) {
       width: 90%;  
       padding: 2%; 
       margin: 2%; 
-      border-radius: 5%;
+      border-radius: 0.5em;
     }
     .easy-start-card .start-guide {
       margin-top: 3%;
@@ -190,7 +221,8 @@ function deleteStartCard() {
 }
 
 function createRangeBar(blackRanges) {
-  const palette = ['#e3f2fd', '#bbdefb', '#90caf9', '#64b5f6', '#42a5f5', '#2196f3', '#1e88e5', '#1976d2', '#1565c0', '#0d47a1'];
+  // const palette = ['#e3f2fd', '#bbdefb', '#90caf9', '#64b5f6', '#42a5f5', '#2196f3', '#1e88e5', '#1976d2', '#1565c0', '#0d47a1'];
+  const palette = ['#e3f2fd', '#e3f2fd', '#e3f2fd', '#e3f2fd', '#e3f2fd', '#1e88e5', '#1e88e5', '#1e88e5', '#1e88e5', '#1e88e5', ];
   const styles = `
     .range-bar {
       background-color: white;
