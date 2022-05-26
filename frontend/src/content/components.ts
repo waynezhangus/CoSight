@@ -68,21 +68,49 @@ function readComments(commentsTimed, { start, end }) {
 
   document.addEventListener('keydown', handleKeyDown)
 
-  let commentIndex = 0
+  let commentIndex = 0;
   function handleKeyDown (event) {
     if (event.shiftKey) {
       const msg = new SpeechSynthesisUtterance();
       if (commentIndex == commentsToRead.length) {
-        msg.text = 'Those are all the comments!' 
-        document.removeEventListener('keydown', handleKeyDown)
-        return
+        msg.text = 'Those are all the comments!';
+        document.removeEventListener('keydown', handleKeyDown);
       } else {
         msg.text = commentsToRead[commentIndex].text;
-        commentIndex += 1
+        commentIndex += 1;
       }
-      window.speechSynthesis.speak(msg) 
+      window.speechSynthesis.speak(msg);
     }
   }
+}
+
+function createAddTimeCard(parent) {
+  const video = document.getElementsByTagName('video')[0];
+
+  const styles = `
+    .add-time-card {
+      background-color: rgb(229, 229, 229); 
+      width: 35%; height: 80%; padding: 1.5%; 
+      margin-bottom: 2%; 
+      border-radius: 5%;
+    }
+  `
+
+  const addTimeCard = document.createElement('div');
+  addTimeCard.classList.add('add-time-card');
+  addTimeCard.append('Please add a timestamp to make your comment more accessible!');
+  parent.insertAdjacentElement('beforebegin', addTimeCard);
+
+  const styleSheet = document.createElement("style");
+  styleSheet.innerText = styles;
+  document.head.appendChild(styleSheet);
+}
+
+function deleteAddTimeCard() {
+  const cards = document.querySelectorAll('.add-time-card');
+  cards.forEach(card => {
+    card.remove();
+  })
 }
 
 function createStartCard(comments, parent) {
@@ -164,7 +192,7 @@ function createStartCard(comments, parent) {
 }
 
 function deleteStartCard() {
-  const cards = document.querySelectorAll('.easy-start-card')
+  const cards = document.querySelectorAll('.easy-start-card');
   cards.forEach(card => {
     card.remove();
   })
@@ -348,4 +376,6 @@ export {
   deleteStartCard,
   createRangeBar,
   createAccordion,
+  createAddTimeCard,
+  deleteAddTimeCard,
 }

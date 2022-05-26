@@ -1,12 +1,15 @@
 import { getVideo, addVideo } from '../background/api'
-import { getVideoId, waitForPromise } from './utils'
+import { extractTimestamp, getVideoId, waitForPromise } from './utils'
 import { createFloatCard, 
         readComments, 
         createStartCard, 
         deleteStartCard,
         createRangeBar,
-        createAccordion } from './components'
+        createAccordion, 
+        createAddTimeCard,
+        deleteAddTimeCard} from './components'
 import { LocalStorageOptions } from '../background/storage';
+import { EditRoad } from '@mui/icons-material';
 
 let options: LocalStorageOptions;
 
@@ -100,8 +103,24 @@ getVideo(video_id).then((videoData) => {
     createStartCard(commentsTimed.slice(0, 5), dialog);
     holder.addEventListener('click', () => createStartCard(commentsTimed.slice(0, 5), dialog));
     dialog.querySelector('#buttons').addEventListener('click', deleteStartCard);
-    document.querySelector('#chevron').addEventListener('click', deleteStartCard);
+    // document.querySelector('#chevron').addEventListener('click', deleteStartCard);
     edit.setAttribute('aria-label', COMMENT_HOLDER);
+
+    if (edit instanceof HTMLElement) {
+      console.log("i am here!!!");
+      edit.onkeyup = () => {
+        console.log("hey");
+        const addTimeCard = document.querySelector('.add-time-card')
+        if (extractTimestamp(edit.textContent) == null) {
+          if (addTimeCard == null) {
+            const startCard = document.querySelector('.easy-start-card');
+            createAddTimeCard(startCard);
+          }
+        } else {
+          deleteAddTimeCard();
+        }
+      }
+    }
   })
 
   waitForPromise('#secondary #contenteditable-root', document.body).then(edit => {
