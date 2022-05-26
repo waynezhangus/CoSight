@@ -49,7 +49,7 @@ function createFloatCard (start, end) {
   
   const img = document.createElement("img");
   Object.assign(img, {
-    src: chrome.runtime.getURL('icon.png'), alt: 'tip',  
+    src: chrome.runtime.getURL('float.png'), alt: 'tip',  
     onclick: handleClick,
     onmouseover: handleHover,
     onmouseout: handleHover,
