@@ -1,3 +1,5 @@
+import { LocalStorageVideo } from "./storage"
+
 const API_URL = 'http://localhost:5000/api/youtube/'
 
 interface VideoData {
@@ -26,9 +28,17 @@ async function getVideo(videoId: string): Promise<VideoData> {
     method: 'GET',
     mode: 'cors',
   })
-  if (!res.ok) {
-    throw new Error('Video not found');
+  let video: LocalStorageVideo = {
+    videoId,
+    status: 'null',
   }
+  if (!res.ok) {
+    video.status = 'null'
+    chrome.storage.local.set({ video })
+    return null;
+  }
+  video.status = 'available'
+  chrome.storage.local.set({ video })
   const data: VideoData = await res.json();
   return data; 
 }
