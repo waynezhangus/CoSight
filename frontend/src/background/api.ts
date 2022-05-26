@@ -27,10 +27,10 @@ async function getVideo(videoId: string): Promise<VideoData> {
     mode: 'cors',
   })
   if (!res.ok) {
-    throw new Error('Video not found')
+    throw new Error('Video not found');
   }
-  const data: VideoData = await res.json()
-  return data
+  const data: VideoData = await res.json();
+  return data; 
 }
 
 async function addVideo(videoId: string): Promise<VideoData> {

@@ -97,7 +97,8 @@ const getVideo = asyncHandler( async (req, res) => {
   const video = await Video.find({videoId: req.params.id})
   if (video.length == 0) {
     res.status(404)
-  }
+    throw new Error('Video not found')
+  } 
   res.status(200).json(video[0])
 })
 

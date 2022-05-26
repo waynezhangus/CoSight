@@ -1,32 +1,39 @@
-import { stampToSecond } from "./utils";
+import { secondToStamp, stampToSecond, waitForPromise } from "./utils";
 
 function createFloatCard (start, end) {
-  const videoContainer = document.querySelector('.html5-video-container');
+  const video = document.getElementsByTagName('video')[0];
+  const videoContainer = document.querySelector('.html5-video-player');
   const FLOATCARD_TITLE = 'Write a quick comment on what you see to help people!';
-  const FLOATCARD_SEG = `From ${start} to ${end}`;
+  const FLOATCARD_SEG = `From ${secondToStamp(start)} to ${secondToStamp(end)}`;
   const FLOATCARD_BUTTON = 'Go';
   const styles = `
     .float-card {
       position: absolute; 
-      z-index: 2; 
-      height: 10em; 
-      width: 15%; 
-      margin-top: 45%; 
-      margin-left: 3%; 
-      padding-right: 1%; 
-      padding-left: 1%; 
-      background-color: #E5E5E5; 
-      border-radius: 0.5em;
+      z-index: 1000; 
+      height: 22%; 
+      width: 17%; 
+      top: 55%; 
+      left: 3%; 
+      padding: 1.5%;
+      background-color: #EEEEEE; 
+      border-radius: 5%;
     }
     .float-card>.text {
-      color: #000000; 
-      margin-left: 8%; 
-      margin-top: 10%;
+      color: #000000;
+    }
+    .float-card>.time-text {
+      margin-top: 4%; 
     }
     .float-card>.button {
-      font-size: 12px; 
-      margin-left: 78%; 
-      margin-top: 2%;
+      position: absolute;
+      background-color: #bbdefb;
+      height: 15%; 
+      width: 20%;
+      right: 10%; 
+      bottom: 5%;
+      border-radius: 5%;
+      border-style: none;
+      font-size: 1em;
     }
   `
 
@@ -42,7 +49,17 @@ function createFloatCard (start, end) {
   jump.classList.add('button')
   jump.append(FLOATCARD_BUTTON);
   jump.onclick = () => {
-    window.scrollTo(0, 1150);
+    const zoom = videoContainer.querySelector<HTMLElement>('.ytp-fullscreen-button');
+    if(zoom.getAttribute('title') === 'Exit full screen (f)') zoom.click();
+    document.querySelector<HTMLElement>('#chevron').click();
+    waitForPromise('#secondary #placeholder-area', document.body).then(holder => holder.click());
+    waitForPromise('#secondary #contenteditable-root', document.body).then(edit => {
+      edit.append(secondToStamp(video.currentTime))
+      edit.focus();
+    });
+    setTimeout(() => { 
+      window.scroll(0, 0); 
+    }, 1000);
   };
 
   const floatCard = document.createElement('div');
@@ -86,6 +103,7 @@ function readComments(commentsTimed, { start, end }) {
 }
 
 function createStartCard(comments, parent) {
+  if (parent.querySelector('.easy-start-card')) return;
   const video = document.getElementsByTagName('video')[0];
   const STARTCARD_TITLE1 = 'Easy Start';
   const STARTCARD_GUIDES = ['__looks like__', 'The color of __ is __', 'The __ is __'];
@@ -94,8 +112,9 @@ function createStartCard(comments, parent) {
   const styles = `
     .easy-start-card {
       background-color: rgb(229, 229, 229); 
-      width: 35%; height: 80%; padding: 1.5%; 
-      margin-bottom: 2%; 
+      width: 90%;  
+      padding: 2%; 
+      margin: 2%; 
       border-radius: 5%;
     }
     .easy-start-card .start-guide {
@@ -283,7 +302,7 @@ function createAccordion(commentsTimed, parent) {
   })
 
   // sort these timestamps
-  allTimestamps.sort(function(a, b) {return stampToSecond(a) - stampToSecond(b)});
+  allTimestamps.sort((a, b) => (stampToSecond(a) - stampToSecond(b)));
 
   // create the structure
   allTimestamps.forEach(timestamp => {
@@ -308,12 +327,8 @@ function createAccordion(commentsTimed, parent) {
       const accordionComment = document.createElement('li');
       accordionComment.classList.add('accordion-comment');
       accordionComment.append(comment.text);
-
-      console.log(comment);
-      console.log('timestamp-' + timestamp);
       const commentList = document.getElementById('timestamp-' + timestamp);
       commentList.append(accordionComment);
-      console.log(commentList);
     })
   })
 

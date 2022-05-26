@@ -1,5 +1,5 @@
 import { getVideo, addVideo } from '../background/api'
-import { getVideoId, waitForPromise } from './utils'
+import { getVideoId, secondToStamp, waitForPromise } from './utils'
 import { createFloatCard, 
         readComments, 
         createStartCard, 
@@ -27,8 +27,6 @@ getVideo(video_id).then((videoData) => {
   let commentsTimed = videoData.comments
   let ccKeywords = videoData.ccKeywords
 
-  console.log(commentsTimed);
-
   const video = document.getElementsByTagName('video')[0];
   createRangeBar(videoData.blackRanges)
 
@@ -40,24 +38,24 @@ getVideo(video_id).then((videoData) => {
     isSeeking = true;
   }
 
-  const messageIcon = document.createElement('div');
-  messageIcon.innerHTML = `<svg style="position: absolute;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-dots" viewBox="0 0 16 16">
-  <path d="M5 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
-  <path d="m2.165 15.803.02-.004c1.83-.363 2.948-.842 3.468-1.105A9.06 9.06 0 0 0 8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6a10.437 10.437 0 0 1-.524 2.318l-.003.011a10.722 10.722 0 0 1-.244.637c-.079.186.074.394.273.362a21.673 21.673 0 0 0 .693-.125zm.8-3.108a1 1 0 0 0-.287-.801C1.618 10.83 1 9.468 1 8c0-3.192 3.004-6 7-6s7 2.808 7 6c0 3.193-3.004 6-7 6a8.06 8.06 0 0 1-2.088-.272 1 1 0 0 0-.711.074c-.387.196-1.24.57-2.634.893a10.97 10.97 0 0 0 .398-2z"/>
-  </svg>`;
+  // const messageIcon = document.createElement('div');
+  // messageIcon.innerHTML = `<svg style="position: absolute;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-dots" viewBox="0 0 16 16">
+  // <path d="M5 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+  // <path d="m2.165 15.803.02-.004c1.83-.363 2.948-.842 3.468-1.105A9.06 9.06 0 0 0 8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6a10.437 10.437 0 0 1-.524 2.318l-.003.011a10.722 10.722 0 0 1-.244.637c-.079.186.074.394.273.362a21.673 21.673 0 0 0 .693-.125zm.8-3.108a1 1 0 0 0-.287-.801C1.618 10.83 1 9.468 1 8c0-3.192 3.004-6 7-6s7 2.808 7 6c0 3.193-3.004 6-7 6a8.06 8.06 0 0 1-2.088-.272 1 1 0 0 0-.711.074c-.387.196-1.24.57-2.634.893a10.97 10.97 0 0 0 .398-2z"/>
+  // </svg>`;
 
   const scrubber = document.querySelector('.ytp-scrubber-container');
-  // const tip = document.createElement("img");
+  const tip = document.createElement("img");
 
-  // Object.assign(tip, {
-  //   className: 'video-tip',
-  //   src: 'icon',
-  //   height: 120, // pixels
-  //   width: 160, // pixels
-  //   alt: 'tip',
-  //   onclick: () => {}
-  // })
-  // scrubber.appendChild(messageIcon);
+  Object.assign(tip, {
+    className: 'video-tip',
+    src: chrome.runtime.getURL('icon.png'),
+    height: 20, // px
+    width: 20, // px
+    alt: 'tip',
+    onclick: () => {}
+  })
+  scrubber.appendChild(tip);
 
   video.ontimeupdate = () => {
     const card = document.querySelector('.float-card');
@@ -80,7 +78,7 @@ getVideo(video_id).then((videoData) => {
         canPause = true;
         if (!card) createFloatCard(start, end);
         else if (prevSeg !== curSeg) {
-          const text = `From ${start} to ${end}`;
+          const text = `From ${secondToStamp(start)} to ${secondToStamp(end)}`;
           card.querySelector('.time-text').innerHTML = text;
           if (prevSeg) prevSeg.hasVisited = true;
         }
@@ -105,9 +103,9 @@ getVideo(video_id).then((videoData) => {
     const holder = document.querySelector('#primary #placeholder-area');
     const dialog = document.querySelector('#primary #comment-dialog');
     createStartCard(commentsTimed.slice(0, 5), dialog);
+    holder.addEventListener('mousedown', () => createStartCard(commentsTimed.slice(0, 5), dialog));
     holder.addEventListener('click', () => createStartCard(commentsTimed.slice(0, 5), dialog));
     dialog.querySelector('#buttons').addEventListener('click', deleteStartCard);
-    document.querySelector('#chevron').addEventListener('click', deleteStartCard);
     edit.setAttribute('aria-label', COMMENT_HOLDER);
   })
 
@@ -115,10 +113,9 @@ getVideo(video_id).then((videoData) => {
     const holder = document.querySelector('#secondary #placeholder-area');
     const dialog = document.querySelector('#secondary #comment-dialog');
     createStartCard(commentsTimed.slice(0, 5), dialog);
+    holder.addEventListener('mousedown', () => createStartCard(commentsTimed.slice(0, 5), dialog));
     holder.addEventListener('click', () => createStartCard(commentsTimed.slice(0, 5), dialog));
     dialog.querySelector('#buttons').addEventListener('click', deleteStartCard);
-    const panel = document.querySelector("ytd-engagement-panel-section-list-renderer[target-id='engagement-panel-comments-section']")
-    panel.querySelector('#visibility-button').addEventListener('click', deleteStartCard);
     edit.setAttribute('aria-label', COMMENT_HOLDER);
   })
 

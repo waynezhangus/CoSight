@@ -29,5 +29,9 @@
       "exclude_matches": ["*://*.music.youtube.com/*"],
       "js": ["content.js"]
     }
-  ]
+  ],
+  "web_accessible_resources": [{
+    "resources": [ "icon.png" ],
+    "matches": [ "*://youtube.com/*", "*://www.youtube.com/*" ]
+  }]
 }
