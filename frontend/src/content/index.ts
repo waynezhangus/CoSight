@@ -1,11 +1,12 @@
 import { getVideo, addVideo } from '../background/api'
-import { getVideoId, secondToStamp, waitForPromise } from './utils'
+import { extractTimestamp, getVideoId, secondToStamp, waitForPromise } from './utils'
 import { createFloatCard, 
         readComments, 
         createStartCard, 
         deleteStartCard,
         createRangeBar,
-        createAccordion } from './components'
+        createAccordion, 
+        createAddTimeCard,} from './components'
 import { LocalStorageOptions } from '../background/storage';
 
 let options: LocalStorageOptions;
@@ -22,6 +23,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
 const video_id = getVideoId(window.location.href);
 
 getVideo(video_id).then((videoData) => {
+  if (!videoData) return;
 
   const videoSeg = videoData.blackRanges.filter(({score}) => score > 0.5);
   let commentsTimed = videoData.comments
@@ -99,6 +101,12 @@ getVideo(video_id).then((videoData) => {
     holder.addEventListener('click', () => createStartCard(commentsTimed.slice(0, 5), dialog));
     dialog.querySelector('#buttons').addEventListener('click', deleteStartCard);
     edit.setAttribute('aria-label', COMMENT_HOLDER);
+    edit.oninput = () => {
+      const timeCard = document.querySelector<HTMLElement>('.add-time-card');
+      const startCard = document.querySelector('#secondary .easy-start-card');
+      if (!extractTimestamp(edit.textContent)) createAddTimeCard(startCard);
+      else timeCard.style.display = 'none';
+    }
   })
 
   waitForPromise('#comments', document.body).then(parent => {
