@@ -222,6 +222,10 @@ function createStartCard(comments, parent) {
         window.scrollTo(0, 0);
         video.currentTime = stampToSecond(timestamp);
         video.play();
+        waitForPromise('#secondary #contenteditable-root', document.body).then(edit => {
+          edit.append(' ' + secondToStamp(video.currentTime))
+          edit.focus();
+        });
       }
       commentElement.appendChild(stampElement);
     })
