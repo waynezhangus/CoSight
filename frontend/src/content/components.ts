@@ -252,7 +252,8 @@ function deleteStartCard() {
 
 function createRangeBar(blackRanges) {
   // const palette = ['#e3f2fd', '#bbdefb', '#90caf9', '#64b5f6', '#42a5f5', '#2196f3', '#1e88e5', '#1976d2', '#1565c0', '#0d47a1'];
-  const palette = ['#e3f2fd', '#e3f2fd', '#e3f2fd', '#e3f2fd', '#e3f2fd', '#1e88e5', '#1e88e5', '#1e88e5', '#1e88e5', '#1e88e5', ];
+  const palette = ['#00a300', '#00a300', '#00a300', '#00a300', '#00a300', '#ffbf00', '#ffbf00', '#ffbf00', '#ffbf00', '#ffbf00', ];
+  // ffea00
   const styles = `
     .range-bar {
       background-color: white;
