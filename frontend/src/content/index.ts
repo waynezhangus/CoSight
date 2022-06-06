@@ -25,7 +25,9 @@ const video_id = getVideoId(window.location.href);
 getVideo(video_id).then((videoData) => {
   if (!videoData) return;
 
-  const videoSeg = videoData.blackRanges.filter(({score}) => score > 0.5);
+  const videoSeg = videoData.blackRanges.filter(({score}) => score > 0.6);
+  console.log("VIDEO SEG!!!!");
+  console.log(videoSeg);
   let commentsTimed = videoData.comments
   let ccKeywords = videoData.ccKeywords
 
@@ -49,16 +51,19 @@ getVideo(video_id).then((videoData) => {
     });
 
     if (typeof curSeg !== "undefined") {
-      const {start, end, hasVisited} = curSeg;
+      const {start, end, hasVisited, reason} = curSeg;
       if (!hasVisited) {
         canPause = true;
-        if (tip?.style.display != 'block') createFloatCard(start, end);
+        console.log("REASON: " + reason);
+        if (tip?.style.display != 'block') createFloatCard(start, end, reason);
         if (prevSeg !== curSeg && card) {
-          const text = `From ${secondToStamp(start)} to ${secondToStamp(end)}`;
-          card.querySelector('.time-text').innerHTML = text;
+          const timeText = `From ${secondToStamp(start)} to ${secondToStamp(end)}`;
+          const reasonText = `Why you are seeing this: ${reason}`;
+          card.querySelector('.time-text').innerHTML = timeText;
+          card.querySelector('.reason-text').innerHTML = reasonText;
           if (prevSeg) prevSeg.hasVisited = true;
         }
-      } else {     
+      } else {    
         if (tip) tip.style.display = 'none';
       }
     } else {

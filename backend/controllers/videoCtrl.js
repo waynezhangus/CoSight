@@ -99,7 +99,7 @@ const getVideo = asyncHandler( async (req, res) => {
     res.status(404)
     throw new Error('Video not found')
   } 
-  res.status(200).json(video[0])
+  res.status(200).json(video[video.length - 1])
 })
 
 const videoCtrl = {

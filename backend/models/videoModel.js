@@ -27,6 +27,10 @@ const videoSchema = mongoose.Schema(
           type: Boolean,
           default: false,
         },
+        reason: {
+          type: String,
+          default: "mismatch between video and audio",
+        },
       },
     ],
     status: {

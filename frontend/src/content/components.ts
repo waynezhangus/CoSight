@@ -1,7 +1,7 @@
 import { secondToStamp, stampToSecond, waitForPromise } from "./utils";
 import * as Tone from 'tone'
 
-function createFloatCard (start, end) {
+function createFloatCard (start, end, reason) {
   if (document.querySelector('.float-tip')) {
     document.querySelector<HTMLElement>('.float-tip').style.display = 'block';
     return;
@@ -10,6 +10,7 @@ function createFloatCard (start, end) {
   const videoContainer = document.querySelector('.html5-video-player');
   const FLOATCARD_TITLE = 'Write a quick comment on what you see to help people!';
   const FLOATCARD_SEG = `From ${secondToStamp(start)} to ${secondToStamp(end)}`;
+  const FLOATCARD_REASON = `Why you are seeing this: ${reason}`;
   const styles = `
     .float-tip {
       z-index: 1000;
@@ -40,10 +41,12 @@ function createFloatCard (start, end) {
       background-color: #EEEEEE; 
       border-radius: 0.5em;
     }
+
     .float-card>.text {
       color: #000000;
     }
-    .float-card>.time-text {
+
+    .float-card>.time-text, .float-card>.reason-text {
       margin-top: 4%; 
     }
   `
@@ -90,12 +93,17 @@ function createFloatCard (start, end) {
   title.append(FLOATCARD_TITLE);
 
   const seg = document.createElement('p');
-  seg.classList.add('time-text', 'text')
+  seg.classList.add('time-text', 'text');
   seg.append(FLOATCARD_SEG);
+
+  // why we are showing this float card
+  const rea = document.createElement('p');
+  rea.classList.add('reason-text', 'text');
+  rea.append(FLOATCARD_REASON);
 
   const floatCard = document.createElement('div');
   floatCard.classList.add('float-card');
-  floatCard.append(title, seg);
+  floatCard.append(title, seg, rea);
   floatCard.style.display = 'none';
   videoContainer.append(floatCard, tip);
 
@@ -105,9 +113,21 @@ function createFloatCard (start, end) {
 }
 
 function readComments(commentsTimed, { start, end }) {
+  console.log("start: " + start);
+  console.log("end:" + end);
   let commentsToRead = commentsTimed.filter(({timestamps}) => {
-    Boolean(timestamps.find((timestamp) => (start <= timestamp && timestamp < end)));
+    console.log(timestamps);
+    for (let i = 0; i < timestamps.length; i++) {
+      let timeSecond = stampToSecond(timestamps[i]);
+      if (start <= timeSecond && timeSecond < end) {
+        return true;
+      }
+    }
+    return false;
+    // Boolean(timestamps.find((timestamp) => (start <= stampToSecond(timestamp) && stampToSecond(timestamp) < end)));
   });
+
+  console.log(commentsToRead);
 
   const synth = new Tone.Synth().toDestination();
   //play a middle 'C' for the duration of an 8th note
@@ -130,6 +150,10 @@ function readComments(commentsTimed, { start, end }) {
         commentIndex += 1;
       }
       window.speechSynthesis.speak(msg);
+    }
+    else if (event.code == "Space") {
+      console.log("Space key pressed");
+      document.removeEventListener('keydown', handleKeyDown);
     }
   }
 }
@@ -252,7 +276,7 @@ function deleteStartCard() {
 
 function createRangeBar(blackRanges) {
   // const palette = ['#e3f2fd', '#bbdefb', '#90caf9', '#64b5f6', '#42a5f5', '#2196f3', '#1e88e5', '#1976d2', '#1565c0', '#0d47a1'];
-  const palette = ['#00a300', '#00a300', '#00a300', '#00a300', '#00a300', '#ffbf00', '#ffbf00', '#ffbf00', '#ffbf00', '#ffbf00', ];
+  const palette = ['#D8D8D8', '#D8D8D8', '#D8D8D8', '#D8D8D8', '#D8D8D8', '#D8D8D8', '#FFC000', '#FFC000', '#FFC000', '#FFC000', ];
   // ffea00
   const styles = `
     .range-bar {

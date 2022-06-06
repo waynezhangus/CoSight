@@ -19,6 +19,7 @@ interface VideoData {
     end: number,
     score: number,
     hasVisited: boolean,
+    reason: string,
   }[]
   status: 'null' | 'processing' | 'available'
 }

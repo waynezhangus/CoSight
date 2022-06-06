@@ -1,7 +1,7 @@
 p {
     font-size: 16px;
-    text-align: justify;
-    text-justify: inter-character;
+    /* text-align: justify;
+    text-justify: inter-character; */
 }
 
 li {
