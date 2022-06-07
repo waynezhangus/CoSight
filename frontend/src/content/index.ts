@@ -26,8 +26,6 @@ getVideo(video_id).then((videoData) => {
   if (!videoData) return;
 
   const videoSeg = videoData.blackRanges.filter(({score}) => score > 0.6);
-  console.log("VIDEO SEG!!!!");
-  console.log(videoSeg);
   let commentsTimed = videoData.comments
   let ccKeywords = videoData.ccKeywords
 
@@ -54,7 +52,6 @@ getVideo(video_id).then((videoData) => {
       const {start, end, hasVisited, reason} = curSeg;
       if (!hasVisited) {
         canPause = true;
-        console.log("REASON: " + reason);
         if (tip?.style.display != 'block') createFloatCard(start, end, reason);
         if (prevSeg !== curSeg && card) {
           const timeText = `From ${secondToStamp(start)} to ${secondToStamp(end)}`;

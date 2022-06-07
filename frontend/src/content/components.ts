@@ -113,10 +113,7 @@ function createFloatCard (start, end, reason) {
 }
 
 function readComments(commentsTimed, { start, end }) {
-  console.log("start: " + start);
-  console.log("end:" + end);
   let commentsToRead = commentsTimed.filter(({timestamps}) => {
-    console.log(timestamps);
     for (let i = 0; i < timestamps.length; i++) {
       let timeSecond = stampToSecond(timestamps[i]);
       if (start <= timeSecond && timeSecond < end) {
@@ -126,8 +123,6 @@ function readComments(commentsTimed, { start, end }) {
     return false;
     // Boolean(timestamps.find((timestamp) => (start <= stampToSecond(timestamp) && stampToSecond(timestamp) < end)));
   });
-
-  console.log(commentsToRead);
 
   const synth = new Tone.Synth().toDestination();
   //play a middle 'C' for the duration of an 8th note
@@ -152,7 +147,6 @@ function readComments(commentsTimed, { start, end }) {
       window.speechSynthesis.speak(msg);
     }
     else if (event.code == "Space") {
-      console.log("Space key pressed");
       document.removeEventListener('keydown', handleKeyDown);
     }
   }
@@ -247,7 +241,7 @@ function createStartCard(comments, parent) {
         video.currentTime = stampToSecond(timestamp);
         video.play();
         waitForPromise('#secondary #contenteditable-root', document.body).then(edit => {
-          edit.append(' ' + secondToStamp(video.currentTime))
+          edit.append(' ' + timestamp)
           edit.focus();
         });
       }
@@ -422,8 +416,7 @@ function createAccordion(commentsTimed, parent) {
 
   // add interactions
   let acc = document.getElementsByClassName("accordion-button");
-  let i;
-  for (i = 0; i < acc.length; i++) {
+  for (let i = 0; i < acc.length; i++) {
     acc[i].addEventListener("click", function() {
       /* Toggle between adding and removing the "active" class,
       to highlight the button that controls the panel */

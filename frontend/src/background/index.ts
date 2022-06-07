@@ -17,13 +17,8 @@ let video: LocalStorageVideo = {
 chrome.runtime.onInstalled.addListener((object) => {
   chrome.storage.sync.set({ options });
   chrome.storage.local.set({ video });
-
-  // let externalUrl = "http://yoursite.com/";
   let internalUrl = chrome.runtime.getURL("onboarding.html");
-
   if (object.reason === chrome.runtime.OnInstalledReason.INSTALL) {
-      chrome.tabs.create({ url: internalUrl }, function (tab) {
-          console.log("New tab launched with http://yoursite.com/");
-      });
+    chrome.tabs.create({ url: internalUrl });
   }
 })
