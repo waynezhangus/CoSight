@@ -17,7 +17,7 @@ let video: LocalStorageVideo = {
 chrome.runtime.onInstalled.addListener((object) => {
   chrome.storage.sync.set({ options });
   chrome.storage.local.set({ video });
-  let internalUrl = chrome.runtime.getURL("onboarding.html");
+  let internalUrl = chrome.runtime.getURL("options.html");
   if (object.reason === chrome.runtime.OnInstalledReason.INSTALL) {
     chrome.tabs.create({ url: internalUrl });
   }

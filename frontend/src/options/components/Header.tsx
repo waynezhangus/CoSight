@@ -1,4 +1,6 @@
 import * as React from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useRouteMatch } from '../utils'
 
 import Box from '@mui/material/Box'
 import Container from '@mui/material/Container'
@@ -14,59 +16,19 @@ import Tab from '@mui/material/Tab';
 import Toolbar from '@mui/material/Toolbar'
 import Tooltip from '@mui/material/Tooltip'
 
-import MenuIcon from '@mui/icons-material/Menu'
+function Header() {
 
-export default function Header() {
+  const routeMatch = useRouteMatch(['/intro', '/settings']);
+  const currentTab = routeMatch?.pattern?.path;
 
-  const [anchorElNav, setAnchorElNav] = React.useState(null)
   const [anchorElUser, setAnchorElUser] = React.useState(null)
 
-  const onCloseNavMenu = () => { setAnchorElNav(null) }
   const onCloseUserMenu = () => { setAnchorElUser(null) }
-
-  const xsNavMenu = (
-    <>
-      <Typography
-        sx={{ mr: 2, display: { xs: 'none', md: 'flex' } }}
-        variant="h6"     
-        component="div"
-        noWrap 
-      >
-        CoSight
-      </Typography>
-      <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-        <IconButton
-          size="large"
-          color="inherit"
-          onClick={(e) => {setAnchorElNav(e.currentTarget)}}
-        >
-          <MenuIcon />
-        </IconButton>
-        <Menu
-          sx={{ display: { xs: 'block', md: 'none' } }}
-          id="menu-appbar"
-          anchorEl={anchorElNav}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-          keepMounted
-          open={Boolean(anchorElNav)}
-          onClose={onCloseNavMenu} 
-        >
-          <MenuItem onClick={onCloseNavMenu} >
-            <Typography textAlign="center">Settings</Typography>
-          </MenuItem>
-          <MenuItem onClick={onCloseNavMenu} >
-            <Typography textAlign="center">Help</Typography>
-          </MenuItem>
-        </Menu>
-      </Box>
-    </>
-  )
 
   const mdNavMenu = (
     <>
       <Typography
-        sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}
+        sx={{ flexGrow: 1.3, display: { xs: 'none', md: 'flex' } }}
         variant="h6"       
         component="div"
         noWrap        
@@ -75,13 +37,13 @@ export default function Header() {
       </Typography>
       <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
         <Tabs
-            value='Settings'
+            value={currentTab ?? false}
             indicatorColor="primary"
             textColor="inherit"
             variant="fullWidth"
         >
-          <Tab label='Settings' value='Settings' />
-          <Tab label='Help' value='Help' />
+          <Tab label='Intro' value='/intro' component={Link} to='/intro' />
+          <Tab label='Settings' value='/settings' component={Link} to='/settings' />
         </Tabs>
       </Box>
     </>
@@ -124,18 +86,17 @@ export default function Header() {
 
         <MenuItem onClick={onCloseUserMenu} key='Login' >
             <Typography textAlign="center">Login</Typography>
-        </MenuItem>,
+        </MenuItem>
 
       </Menu>
     </Box>
   )
 
   return (
-    <AppBar position="static">
+    <AppBar position="sticky">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           <>
-            {xsNavMenu}
             {mdNavMenu}
             {userMenu}
           </>
@@ -145,3 +106,4 @@ export default function Header() {
   );
 };
 
+export default Header
