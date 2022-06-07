@@ -8,10 +8,10 @@ const User = require('../models/userModel')
 // @route   POST /api/users
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password, category } = req.body
+  const { name, email, password } = req.body
 
   // Validation
-  if (!email || !category) {
+  if (!email || !password) {
     res.status(400)
     throw new Error('More information needed')
   }
@@ -27,7 +27,6 @@ const registerUser = asyncHandler(async (req, res) => {
     name,
     email,
     password: hashedPassword,
-    category,
   })
   if (user) {
     const { _id, name, email, category } = user
@@ -70,9 +69,11 @@ const loginUser = asyncHandler(async (req, res) => {
 // @route   POST /api/users/update
 // @access  Private
 const updateUser = asyncHandler(async (req, res) => {
-  const updatedUser = await User.findByIdAndUpdate(req.user.id, req.body, {
-    new: true,
-  })
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user.id, 
+    req.body, 
+    { new: true }
+  )
   res.status(200).json(updatedUser)
 })
 

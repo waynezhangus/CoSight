@@ -10,14 +10,16 @@ import { LocalStorageVideo } from '../background/storage';
 export default function App()
 {
   const [video, setVideo] = React.useState<LocalStorageVideo | null>(null)
-  let videoFound = false;
+  const [videoFound, setVideoFound] = React.useState<boolean>(false)
 
   React.useEffect(() => {
-    chrome.storage.local.get('video', (data) => {setVideo(data.video);});
+    chrome.storage.local.get('video', data => setVideo(data.video));
   }, [])
 
   React.useEffect(() => {
-    if(video?.status == 'available') videoFound = true;
+    if(video?.status == 'available') setVideoFound(true);
+    console.log(video)
+    console.log(videoFound)
   }, [video])
 
   const onClick = () => {}
@@ -38,7 +40,7 @@ export default function App()
         }
       >
         <AlertTitle>{videoFound ? 'Video processed' : 'Video not processed'}</AlertTitle>
-        {videoFound ? 'This video has been processed by CoSight!' : "The video you're watching hasn't been processed by CoSight."} 
+        {videoFound ? 'This video has been processed by CoSight! ' : "The video you're watching hasn't been processed by CoSight. "} 
         <strong>{videoFound ? 'Reprocess here.' : 'Request here!'}</strong>
       </Alert>
     </Container>
