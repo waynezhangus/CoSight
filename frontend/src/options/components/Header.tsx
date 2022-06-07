@@ -84,7 +84,7 @@ function Header() {
         onClose={onCloseUserMenu}
       >
 
-        <MenuItem onClick={onCloseUserMenu} key='Login' >
+        <MenuItem onClick={onCloseUserMenu} key='Login' component={Link} to='/login'>
             <Typography textAlign="center">Login</Typography>
         </MenuItem>
 
