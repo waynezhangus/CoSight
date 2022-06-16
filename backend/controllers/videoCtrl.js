@@ -13,24 +13,21 @@ const addVideo = asyncHandler( async (req, res) => {
   const comments = await getComments(videoId);
   const blackRanges = videosRanges[videoId] ?? [];
 
-  const video = await Video.findOne({videoId: videoId})
-  if (!video) {
-    const videoNew = Video({
-      videoId,
-      ccKeywords,
-      comments,
-      blackRanges, 
-      status: 'available',
-    })
-    videoNew.save()
-    res.status(201).json(videoNew);
-  } else {
-    video.ccKeywords = ccKeywords;
-    video.comments = comments;
-    video.blackRanges = blackRanges;
-    video.save()
-    res.status(200).json(video);
-  }
+  const filter = { videoId };
+  const update = {
+    ccKeywords,
+    comments,
+    blackRanges,
+    status: 'available',
+  };
+  const options = {
+    upsert: true, 
+    new: true, 
+    setDefaultsOnInsert: true
+  };
+
+  const video = await Video.findOneAndUpdate(filter, update, options)
+  res.status(200).json(video);
 })
 
 // @desc    Get one video info

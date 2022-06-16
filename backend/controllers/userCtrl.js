@@ -15,32 +15,30 @@ const registerUser = asyncHandler(async (req, res) => {
     res.status(400)
     throw new Error('More information needed')
   }
-  const userExists = await User.findOne({ email })
-  if (userExists) {
+  const nameExists = await User.findOne({ name })
+  const emailExists = await User.findOne({ email })
+  if (nameExists || emailExists) {
     res.status(400)
     throw new Error('User already exists')
   }
 
   // Create user
   const hashedPassword = await bcrypt.hash(password, 10)
-  const user = await User.create({
+  const user = new User({
     name,
     email,
     password: hashedPassword,
   })
-  if (user) {
-    const { _id, name, email, category } = user
-    res.status(201).json({
-      _id,
-      name,
-      email,
-      category,
-      token: generateToken(_id),
-    })
-  } else {
+  try {
+    user.save()
+  } catch(err) {
     res.status(400)
-    throw new error('Invalid user data')
+    throw new error(err)
   }
+  res.status(201).json({
+    ...user._doc,
+    token: generateToken(user._id),
+  })
 })
 
 // @desc    Login a user
@@ -52,6 +50,8 @@ const loginUser = asyncHandler(async (req, res) => {
   //Validation
   const user = await User.findOne({ email })
   if (user && (await bcrypt.compare(password, user.password))) {
+    console.log(user)
+    console.log(user._doc)
     const { _id, name, email, category } = user
     res.status(200).json({
       _id,
@@ -62,7 +62,7 @@ const loginUser = asyncHandler(async (req, res) => {
     })
   } else {
     res.status(401)
-    throw new Error('Invalid credentials')
+    throw new Error('Wrong email or password')
   }
 })
 // @desc    Update a user

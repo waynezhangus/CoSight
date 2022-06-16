@@ -4,14 +4,14 @@
   "version": "1.0.0",
   "manifest_version": 3,
   "icons": {
-    "16": "icon.png",
-    "48": "icon.png",
-    "128": "icon.png"
+    "16": "float.png",
+    "48": "float.png",
+    "128": "float.png"
   },
   "action": {
     "default_popup": "popup.html",
     "default_title": "CoSight",
-    "default_icon": "icon.png"
+    "default_icon": "float.png"
   },
   "permissions": ["storage"],
   "options_page": "options.html",
