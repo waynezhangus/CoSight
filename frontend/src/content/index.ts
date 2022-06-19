@@ -7,15 +7,15 @@ import { createFloatCard,
         createRangeBar,
         createAccordion, 
         createAddTimeCard,} from './components'
-import { LocalStorageOptions } from '../background/storage';
+import { LocalStorageUser } from '../background/storage';
 
-let options: LocalStorageOptions;
+let user: LocalStorageUser;
 
-chrome.storage.sync.get('options', (data) => options = data.options);
+chrome.storage.sync.get('user', (data) => user = data.user);
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === 'sync' && changes.options?.newValue) {
-    options = changes.options.newValue;
+  if (area === 'sync' && changes.user?.newValue) {
+    user = changes.user.newValue;
   }
 });
 
@@ -76,7 +76,7 @@ getVideo(video_id).then((videoData) => {
       return;
     }
     // accessibility mode
-    if (options.mode && (prevSeg !== curSeg) && canPause && prevSeg) {
+    if (user.mode && (prevSeg !== curSeg) && canPause && prevSeg) {
       readComments(commentsTimed, prevSeg);
       canPause = false;
     }

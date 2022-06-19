@@ -3,9 +3,9 @@ import {
   getVideo,
   addVideo,
 } from './api' 
-import { LocalStorageOptions, LocalStorageVideo } from './storage';
+import { LocalStorageUser, LocalStorageVideo } from './storage';
 
-let options: LocalStorageOptions = {
+let user: LocalStorageUser = {
   mode: false,
 };
 
@@ -15,7 +15,7 @@ let video: LocalStorageVideo = {
 }
 
 chrome.runtime.onInstalled.addListener((object) => {
-  chrome.storage.sync.set({ options });
+  chrome.storage.sync.set({ user });
   chrome.storage.local.set({ video });
   let internalUrl = chrome.runtime.getURL("options.html");
   if (object.reason === chrome.runtime.OnInstalledReason.INSTALL) {

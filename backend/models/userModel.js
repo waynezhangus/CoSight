@@ -12,11 +12,10 @@ const userSchema = mongoose.Schema(
       unique: true 
     },
     password: String,
-    category: {
-      type: String,
-      enum: ['admin', 'regular', 'accessibility'],
+    mode: {
+      type: Boolean,
       required: true,
-      default: 'regular',
+      default: false,
     },
   },
   {

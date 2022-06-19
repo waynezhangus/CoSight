@@ -35,10 +35,12 @@ const registerUser = asyncHandler(async (req, res) => {
     res.status(400)
     throw new error(err)
   }
-  res.status(201).json({
+  const resObj = {
     ...user._doc,
     token: generateToken(user._id),
-  })
+  }
+  delete resObj.password
+  res.status(201).json(resObj)
 })
 
 // @desc    Login a user
@@ -50,31 +52,34 @@ const loginUser = asyncHandler(async (req, res) => {
   //Validation
   const user = await User.findOne({ email })
   if (user && (await bcrypt.compare(password, user.password))) {
-    console.log(user)
-    console.log(user._doc)
-    const { _id, name, email, category } = user
-    res.status(200).json({
-      _id,
-      name,
-      email,
-      category,
-      token: generateToken(_id),
-    })
+    const resObj = {
+      ...user._doc,
+      token: generateToken(user._id),
+    }
+    const omit = ['createdAt', 'updatedAt', '__v', 'password']
+    omit.forEach(e => delete resObj[e])
+    res.status(200).json(resObj)
   } else {
     res.status(401)
     throw new Error('Wrong email or password')
   }
 })
 // @desc    Update a user
-// @route   POST /api/users/update
+// @route   PATCH /api/users/update
 // @access  Private
 const updateUser = asyncHandler(async (req, res) => {
-  const updatedUser = await User.findByIdAndUpdate(
+  const user = await User.findByIdAndUpdate(
     req.user.id, 
     req.body, 
     { new: true }
   )
-  res.status(200).json(updatedUser)
+  const resObj = {
+    ...user._doc,
+    token: generateToken(user._id),
+  }
+  const omit = ['createdAt', 'updatedAt', '__v', 'password']
+  omit.forEach(e => delete resObj[e])
+  res.status(200).json(resObj)
 })
 
 // Generate token

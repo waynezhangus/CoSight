@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { LocalStorageOptions } from '../../background/storage'
+import { LocalStorageUser } from '../../background/storage'
 // MUI Components
 import Accordion from '@mui/material/Accordion'
 import AccordionDetails from '@mui/material/AccordionDetails'
@@ -11,19 +11,23 @@ import Switch from '@mui/material/Switch'
 import Typography from '@mui/material/Typography'
 // MUI Icons
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import { userUpdate } from '../../background/api'
 
 export default function Settings()
 {
-  const [options, setOptions] = React.useState<LocalStorageOptions | null>(null)
+  const [user, setUser] = React.useState<LocalStorageUser | null>(null)
   const [expanded, setExpanded] = React.useState<string | boolean>(false)
 
   React.useEffect(() => {
-    chrome.storage.sync.get('options', (data) => {setOptions(data.options); console.log(data.options)});
+    chrome.storage.sync.get('user', (data) => setUser(data.user));
   }, [])
 
   React.useEffect(() => {
-    if(options) chrome.storage.sync.set({options});
-  }, [options])
+    if(user) {
+      chrome.storage.sync.set({user});
+      userUpdate(user);
+    }
+  }, [user])
   
   const handleChange = (panel) => (_, isExpanded) => {
     setExpanded(isExpanded ? panel : false);
@@ -31,10 +35,10 @@ export default function Settings()
 
   const onSwitch = e => {
     const {name, checked} = e.target
-    setOptions({...options, [name]:checked})
+    setUser({...user, [name]:checked})
   }
 
-  if (!options) {
+  if (!user) {
     return null
   }
 
@@ -47,8 +51,8 @@ export default function Settings()
         <AccordionDetails>
           <FormGroup sx={{ pl: 1.2, flexDirection: 'row' }}>
             <FormControlLabel
-              control={<Switch name='mode' checked={options.mode} onChange={onSwitch} />} 
-              label={options.mode ? 'Accessibility mode' : 'Regular mode'} 
+              control={<Switch name='mode' checked={user.mode} onChange={onSwitch} />} 
+              label={user.mode ? 'Accessibility mode' : 'Regular mode'} 
             />
             
           </FormGroup>

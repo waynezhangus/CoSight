@@ -10,17 +10,12 @@ import { LocalStorageVideo } from '../background/storage';
 export default function App()
 {
   const [video, setVideo] = React.useState<LocalStorageVideo | null>(null)
-  const [videoFound, setVideoFound] = React.useState<boolean>(false)
 
   React.useEffect(() => {
     chrome.storage.local.get('video', data => setVideo(data.video));
   }, [])
 
-  React.useEffect(() => {
-    if(video?.status == 'available') setVideoFound(true);
-    console.log(video)
-    console.log(videoFound)
-  }, [video])
+  const videoFound = video?.status == 'available' ? true : false;
 
   const onClick = () => {}
 

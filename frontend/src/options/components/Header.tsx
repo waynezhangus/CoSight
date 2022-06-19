@@ -15,8 +15,15 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Toolbar from '@mui/material/Toolbar'
 import Tooltip from '@mui/material/Tooltip'
+import { LocalStorageUser } from '../../background/storage'
 
 function Header() {
+  const navigate = useNavigate()
+  const [user, setUser] = React.useState<LocalStorageUser | null>(null)
+
+  React.useEffect(() => {
+    chrome.storage.sync.get('user', (data) => {setUser(data.user); console.log(data.user)});
+  }, [])
 
   const routeMatch = useRouteMatch(['/intro', '/settings']);
   const currentTab = routeMatch?.pattern?.path;
@@ -24,6 +31,15 @@ function Header() {
   const [anchorElUser, setAnchorElUser] = React.useState(null)
 
   const onCloseUserMenu = () => { setAnchorElUser(null) }
+
+  const onLogout = () => {
+    onCloseUserMenu()
+    let user: LocalStorageUser = {
+      mode: false,
+    }
+    chrome.storage.sync.set({user})
+    navigate('/login')
+  };
 
   const mdNavMenu = (
     <>
@@ -63,14 +79,14 @@ function Header() {
         component="div"
         noWrap        
       >
-        {`Good ${timeString}, Wayne.`}
+        {user?.name ? (`Good ${timeString}, ${user.name}.`) : 'Welcome! Please log in.'}
       </Typography>
       <Tooltip title="Account operations">
         <IconButton 
           sx={{ p: 0, ml: 2 }} 
           onClick={(e) => {setAnchorElUser(e.currentTarget)}}
         >
-          <Avatar alt="Avatar" src={`https://api.multiavatar.com/12345.png`} />
+          <Avatar alt="Avatar" src={`https://api.multiavatar.com/${user?._id ?? ''}.png`} />
         </IconButton>
       </Tooltip>
       <Menu
@@ -83,11 +99,24 @@ function Header() {
         open={Boolean(anchorElUser)}
         onClose={onCloseUserMenu}
       >
-
-        <MenuItem onClick={onCloseUserMenu} key='Login' component={Link} to='/login'>
-            <Typography textAlign="center">Login</Typography>
-        </MenuItem>
-
+        {user?.name
+          ? [ 
+              <MenuItem onClick={onLogout} key='Logout'>
+                <Typography textAlign="center">Logout</Typography>
+              </MenuItem>,
+              <MenuItem onClick={onCloseUserMenu} key='Help'>
+                <Typography textAlign="center">Help</Typography>
+              </MenuItem>,
+          ]
+          : [
+            <MenuItem onClick={onCloseUserMenu} key='Login' component={Link} to='/login'>
+                <Typography textAlign="center">Login</Typography>
+            </MenuItem>,
+            <MenuItem onClick={onCloseUserMenu} key='Help'>
+              <Typography textAlign="center">Help</Typography>
+            </MenuItem>
+          ]
+        }
       </Menu>
     </Box>
   )

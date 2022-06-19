@@ -15,30 +15,25 @@ import Link from '@mui/material/Link'
 import TextField from '@mui/material/TextField'
 
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
+import { userLogin } from '../../background/api'
 
 export default function Login() {
   const [formData, setFormData] = React.useState({
     email: '',
     password: '',
   })
-  const { email, password } = formData
 
   const navigate = useNavigate()
 
-  const onChange = (e) => {
-    setFormData((prevState) => ({
-      ...prevState,
-      [e.target.name]: e.target.value,
-    }))
+  const onChange = e => {
+    const {name, value} = e.target
+    setFormData({...formData, [name]:value})
   }
 
-  const onSubmit = (e) => {
+  const onSubmit = async e => {
     e.preventDefault()
-
-    const userData = {
-      email,
-      password,
-    }
+    await userLogin(formData)
+    navigate('/')
   }
 
   return (
@@ -65,7 +60,7 @@ export default function Login() {
             label="Email Address"
             type="email"
             name="email"
-            value={email}
+            value={formData.email}
             autoComplete="email"
             autoFocus
             onChange={onChange}
@@ -77,7 +72,7 @@ export default function Login() {
             label="Password"
             type="password"
             name="password"
-            value={password}                   
+            value={formData.password}                   
             autoComplete="current-password"
             onChange={onChange}
           />

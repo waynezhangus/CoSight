@@ -15,8 +15,8 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(morgan('tiny'))
 app.use(cors({
-  origin: 'https://www.youtube.com',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
 }))
 
 // Routes

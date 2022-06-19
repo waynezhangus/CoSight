@@ -15,6 +15,7 @@ import Link from '@mui/material/Link'
 import TextField from '@mui/material/TextField'
 
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
+import { userRegister } from '../../background/api'
 
 export default function Register() {
   const [formData, setFormData] = React.useState({
@@ -23,28 +24,21 @@ export default function Register() {
     password: '',
     password2: '',
   })
-  const { name, email, password, password2 } = formData
 
   const navigate = useNavigate()
 
-  const onChange = (e) => {
-    setFormData((prevState) => ({
-      ...prevState,
-      [e.target.name]: e.target.value,
-    }))
+  const onChange = e => {
+    const {name, value} = e.target
+    setFormData({...formData, [name]:value})
   }
 
-  const onSubmit = (e) => {
+  const onSubmit = async e => {
     e.preventDefault()
-
-    if (password !== password2) {
+    if (formData.password !== formData.password2) {
       //toast.error('Passwords do not match')
     } else {
-      const userData = {
-        name,
-        email,
-        password,
-      }
+      await userRegister(formData)
+      navigate('/')
     }
   }
 
@@ -73,7 +67,7 @@ export default function Register() {
                 fullWidth           
                 label="Name"
                 name="name"
-                value={name}
+                value={formData.name}
                 autoComplete="name"
                 autoFocus
                 onChange={onChange}
@@ -87,7 +81,7 @@ export default function Register() {
                 label="Email Address"
                 type="email"
                 name="email"
-                value={email}
+                value={formData.email}
                 autoComplete="email"
                 autoFocus
                 onChange={onChange}
@@ -101,7 +95,7 @@ export default function Register() {
                 label="Password"
                 type="password"
                 name="password"            
-                value={password}                   
+                value={formData.password}                   
                 autoComplete="current-password"
                 onChange={onChange}
               />
@@ -114,7 +108,7 @@ export default function Register() {
                 label="Confirm password"
                 type="password"
                 name="password2"
-                value={password2}                   
+                value={formData.password2}                   
                 onChange={onChange}
               />
             </Grid>
