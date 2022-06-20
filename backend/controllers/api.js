@@ -1,6 +1,7 @@
 const getSubtitles = require('youtube-captions-scraper').getSubtitles;
 const keyword_extractor = require("keyword-extractor");
-const axios = require('axios')
+const axios = require('axios');
+const Video = require('../models/videoModel');
 
 async function getCCKeywords(videoId) {
   const captions = await getSubtitles({ videoID: videoId });
@@ -43,7 +44,7 @@ async function getCCKeywords(videoId) {
 }
 
 async function getComments(videoId) {
-  
+
   let nextPageToken = null;
   let allComments = [];
   do {
@@ -67,7 +68,7 @@ async function getComments(videoId) {
   
   allComments = allComments.map(comment => ({
     text: comment['textOriginal'],
-    likeCount: comment['likeCount'],
+    regLike: comment['likeCount'],
     timestamps: comment['textOriginal'].match(/\b[0-5]?[0-9]:[0-5][0-9]\b/g),
   }))
 
@@ -77,14 +78,23 @@ async function getComments(videoId) {
     ...comment,
     keywords: keyword_extractor.extract(comment.text, {
       language:"english",
-      remove_digits: false,
-      return_changed_case: false,
+      remove_digits: true,
+      return_changed_case: true,
       remove_duplicates: true,
       return_chained_words: true
     }),
   }))
 
-  commentsTimed.sort((a, b) => (b.likeCount - a.likeCount))
+  const video = await Video.findOne({ videoId })
+  if (video) {
+    const prevComments = video.comments
+    commentsTimed.forEach(comment => {
+      prev = prevComments.find(prevComment => prevComment.text == comment.text)
+      comment.accLike = prev?.accLike ?? 0
+    })
+  }
+
+  commentsTimed.sort((a, b) => (b.regLike - a.regLike))
   return commentsTimed
 }
 

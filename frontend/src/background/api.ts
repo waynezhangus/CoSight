@@ -10,7 +10,8 @@ interface VideoData {
   }[]
   comments?: {
     text: string
-    likeCount: number
+    regLike: number
+    accLike: number
     timestamps: string[]
     keywords: string[]
   }[]

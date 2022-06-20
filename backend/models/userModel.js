@@ -17,6 +17,14 @@ const userSchema = mongoose.Schema(
       required: true,
       default: false,
     },
+    statistics: [
+      {
+        videoId: String,
+        userComments: [String],
+        iconClicked: Number,
+        iconStamp: [String],
+      },
+    ],
   },
   {
     timestamps: true,

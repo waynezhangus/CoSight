@@ -22,7 +22,7 @@ function Header() {
   const [user, setUser] = React.useState<LocalStorageUser | null>(null)
 
   React.useEffect(() => {
-    chrome.storage.sync.get('user', (data) => {setUser(data.user); console.log(data.user)});
+    chrome.storage.sync.get('user', (data) => setUser(data.user));
   }, [])
 
   const routeMatch = useRouteMatch(['/intro', '/settings']);

@@ -13,7 +13,10 @@
     "default_title": "CoSight",
     "default_icon": "float.png"
   },
-  "permissions": ["storage"],
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
   "options_page": "options.html",
   "background": {
     "service_worker": "background.js"

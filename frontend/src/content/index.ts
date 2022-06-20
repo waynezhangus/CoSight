@@ -1,4 +1,4 @@
-import { getVideo, addVideo } from '../background/api'
+import { getVideo } from '../background/api'
 import { extractTimestamp, getVideoId, secondToStamp, waitForPromise } from './utils'
 import { createFloatCard, 
         readComments, 
@@ -20,9 +20,9 @@ chrome.storage.onChanged.addListener((changes, area) => {
 });
 
 // Get the id of the current Youtube video
-const video_id = getVideoId(window.location.href);
+const videoId = getVideoId(window.location.href);
 
-getVideo(video_id).then((videoData) => {
+getVideo(videoId).then((videoData) => {
   if (!videoData) return;
 
   const videoSeg = videoData.blackRanges.filter(({score}) => score > 0.6);

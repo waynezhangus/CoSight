@@ -13,7 +13,8 @@ const videoSchema = mongoose.Schema(
     comments: [
       {
         text: String,
-        likeCount: Number,
+        regLike: Number,
+        accLike: Number,
         timestamps: [String],
         keywords: [String],
       },
