@@ -1,3 +1,5 @@
+import { userUpdate } from "../background/api";
+
 function getVideoId(url) {
   const urlObject = new URL(url);
   const pathname = urlObject.pathname;
@@ -47,10 +49,36 @@ function waitForPromise(selector: string, parent: Element) {
   })
 }
 
+function feedBack(videoId: string, name: string, value: string) {
+  chrome.storage.sync.get('user', ({user}) => {
+    if (user.statistics) {
+      const vIndex = user.statistics.findIndex(v => v.videoId == videoId)
+      if (vIndex != -1) {
+        user.statistics[vIndex][name] = user.statistics[vIndex][name]
+                                        ? [...user.statistics[vIndex][name], value]
+                                        : [value]
+      } else {
+        user.statistics.push({
+          videoId, 
+          [name]: [value],
+        })
+      }
+      chrome.storage.sync.set({user})
+      userUpdate({
+        statistics: user.statistics,
+        token: user.token,
+      })
+    } else {
+      console.log('Please sign in')
+    }
+  })
+}
+
 export {
   getVideoId,
   waitForPromise,
   stampToSecond,
   secondToStamp,
   extractTimestamp,
+  feedBack,
 };

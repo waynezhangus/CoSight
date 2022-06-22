@@ -1,5 +1,9 @@
 import { getVideo } from '../background/api'
-import { extractTimestamp, getVideoId, secondToStamp, waitForPromise } from './utils'
+import { feedBack, 
+        extractTimestamp, 
+        getVideoId, 
+        secondToStamp, 
+        waitForPromise } from './utils'
 import { createFloatCard, 
         readComments, 
         createStartCard, 
@@ -52,19 +56,19 @@ getVideo(videoId).then((videoData) => {
       const {start, end, hasVisited, reason} = curSeg;
       if (!hasVisited) {
         canPause = true;
-        if (tip?.style.display != 'block') createFloatCard(start, end, reason);
+        if (tip?.style.display != 'block') createFloatCard(start, end, reason, videoId);
         if (prevSeg !== curSeg && card) {
           const timeText = `From ${secondToStamp(start)} to ${secondToStamp(end)}`;
           const reasonText = `Why you are seeing this: ${reason}`;
           card.querySelector('.time-text').innerHTML = timeText;
           card.querySelector('.reason-text').innerHTML = reasonText;
-          if (prevSeg) prevSeg.hasVisited = true;
+          // if (prevSeg) prevSeg.hasVisited = true;
         }
       } else {    
         if (tip) tip.style.display = 'none';
       }
     } else {
-      if (prevSeg) prevSeg.hasVisited = true;
+      // if (prevSeg) prevSeg.hasVisited = true;
       if (tip) tip.style.display = 'none';
     }
 
@@ -83,31 +87,33 @@ getVideo(videoId).then((videoData) => {
     prevSeg = curSeg;
   }
 
-  const COMMENT_HOLDER = 'What images are the most significant to the understanding and appreciation of the video?';
+  const COMMENT_HOLDER = 'What images are the most significant to the understanding of the video?';
 
   waitForPromise('#primary #contenteditable-root', document.body).then(edit => {
+    edit.setAttribute('aria-label', COMMENT_HOLDER);
     const holder = document.querySelector('#primary #placeholder-area');
     const dialog = document.querySelector('#primary #comment-dialog');
     createStartCard(commentsTimed.slice(0, 5), dialog);
     holder.addEventListener('mousedown', () => createStartCard(commentsTimed.slice(0, 5), dialog));
     holder.addEventListener('click', () => createStartCard(commentsTimed.slice(0, 5), dialog));
     dialog.querySelector('#buttons').addEventListener('click', deleteStartCard);
-    edit.setAttribute('aria-label', COMMENT_HOLDER);
+    dialog.querySelector('#submit-button').addEventListener('click', () => feedBack(videoId, 'userComments', edit.textContent));
   })
 
   waitForPromise('#secondary #contenteditable-root', document.body).then(edit => {
+    edit.setAttribute('aria-label', COMMENT_HOLDER);
     const holder = document.querySelector('#secondary #placeholder-area');
     const dialog = document.querySelector('#secondary #comment-dialog');
     createStartCard(commentsTimed.slice(0, 5), dialog);
     holder.addEventListener('mousedown', () => createStartCard(commentsTimed.slice(0, 5), dialog));
     holder.addEventListener('click', () => createStartCard(commentsTimed.slice(0, 5), dialog));
     dialog.querySelector('#buttons').addEventListener('click', deleteStartCard);
-    edit.setAttribute('aria-label', COMMENT_HOLDER);
+    dialog.querySelector('#submit-button').addEventListener('click', () => feedBack(videoId, 'userComments', edit.textContent));
     edit.oninput = () => {
       const timeCard = document.querySelector<HTMLElement>('.add-time-card');
       const startCard = document.querySelector('#secondary .easy-start-card');
       if (!extractTimestamp(edit.textContent)) createAddTimeCard(startCard);
-      else timeCard.style.display = 'none';
+      else if (timeCard) timeCard.style.display = 'none';
     }
   })
 

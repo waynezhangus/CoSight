@@ -125,7 +125,7 @@ export default function Register() {
             variant="contained"
             type="submit"           
           >
-            Sign In
+            Sign Up
           </Button>
           <Grid container justifyContent="flex-end">
             <Grid item>

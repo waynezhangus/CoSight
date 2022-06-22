@@ -14,6 +14,11 @@ interface LocalStorageUser {
   email?: string
   token?: string
   mode: boolean
+  statistics?: {
+    videoId?: string
+    userComments?: string[]
+    iconStamps?: string[]
+  }[]
 }
 
 type LocalStorageKeys = keyof LocalStorage

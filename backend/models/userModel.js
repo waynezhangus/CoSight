@@ -21,8 +21,7 @@ const userSchema = mongoose.Schema(
       {
         videoId: String,
         userComments: [String],
-        iconClicked: Number,
-        iconStamp: [String],
+        iconStamps: [String],
       },
     ],
   },
