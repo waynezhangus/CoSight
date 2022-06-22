@@ -20,6 +20,7 @@ const userSchema = mongoose.Schema(
     statistics: [
       {
         videoId: String,
+        title: String,
         userComments: [String],
         iconStamps: [String],
       },

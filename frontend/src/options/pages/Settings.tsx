@@ -23,7 +23,7 @@ export default function Settings()
   }, [])
 
   React.useEffect(() => {
-    if(user) {
+    if(user?._id) {
       chrome.storage.sync.set({user});
       userUpdate(user);
     }
@@ -38,7 +38,7 @@ export default function Settings()
     setUser({...user, [name]:checked})
   }
 
-  if (!user) {
+  if (!user?._id) {
     return null
   }
 

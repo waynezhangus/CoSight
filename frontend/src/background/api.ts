@@ -4,6 +4,7 @@ const API_URL = 'http://localhost:5000/api/'
 
 interface VideoData {
   videoId: string
+  title: string
   ccKeywords?: {
     text: string
     timestamps: string[]
@@ -30,18 +31,20 @@ async function getVideo(videoId: string): Promise<VideoData> {
     method: 'GET',
     mode: 'cors',
   })
+  const data: VideoData = await res.json();
   let video: LocalStorageVideo = {
     videoId,
+    title: data.title,
     status: 'null',
   }
   if (!res.ok) {
     chrome.storage.local.set({ video })
     return null;
+  } else {
+    video.status = 'available'
+    chrome.storage.local.set({ video })
+    return data; 
   }
-  video.status = 'available'
-  chrome.storage.local.set({ video })
-  const data: VideoData = await res.json();
-  return data; 
 }
 
 async function addVideo(videoId: string): Promise<VideoData> {

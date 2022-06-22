@@ -3,6 +3,21 @@ const keyword_extractor = require("keyword-extractor");
 const axios = require('axios');
 const Video = require('../models/videoModel');
 
+async function getTitle(videoId) {
+  const config = {
+    headers: {
+      'Accept': 'application/json'
+    },
+    params: {
+      key: process.env.YT_APIKEY,
+      part: 'snippet',
+      id: videoId,
+    }
+  }
+  const response = await axios.get(process.env.YT_VID_URL, config);
+  return response.data['items'][0]['snippet']['title']
+}
+
 async function getCCKeywords(videoId) {
   const captions = await getSubtitles({ videoID: videoId });
   caption_string = captions.reduce((sum, cur) => sum + cur['text'] + ' ', '');
@@ -53,14 +68,14 @@ async function getComments(videoId) {
         'Accept': 'application/json'
       },
       params: {
-        key: process.env.YOUTUBE_APIKEY,
+        key: process.env.YT_APIKEY,
         part: 'snippet',
         videoId,
         maxResults: 100,
         pageToken: nextPageToken,
       }
     }
-    const response = await axios.get(process.env.YOUTUBE_URL, config);
+    const response = await axios.get(process.env.YT_COM_URL, config);
     nextPageToken = response.data['nextPageToken'];
     commentPage = response.data['items'].map(item => item["snippet"]["topLevelComment"]["snippet"])
     allComments = [...allComments, ...commentPage];
@@ -99,6 +114,7 @@ async function getComments(videoId) {
 }
 
 module.exports = { 
+  getTitle,
   getCCKeywords,
   getComments
 }

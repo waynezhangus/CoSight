@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const videoSchema = mongoose.Schema(
   {
     videoId: { type: String, required: true },
+    title: String,
     ccKeywords: [
       {
         text: String,

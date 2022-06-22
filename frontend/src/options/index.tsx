@@ -7,9 +7,10 @@ import './index.css'
 
 import Home from './pages/Home'
 import Intro from './pages/Intro'
-import Settings from './pages/Settings'
 import Login from './pages/Login'
+import Profile from './pages/Profile'
 import Register from './pages/Register'
+import Settings from './pages/Settings'
 
 const theme = createTheme()
 
@@ -25,6 +26,7 @@ root.render(
         <Routes>
           <Route path='/' element={<Home />}>
             <Route path='/intro' element={<Intro />} />
+            <Route path='/profile' element={<Profile />} />
             <Route path='/settings' element={<Settings />} />
           </Route>
           <Route path='/login' element={<Login />} />

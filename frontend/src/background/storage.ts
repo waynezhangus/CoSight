@@ -5,6 +5,7 @@ interface LocalStorage {
 
 interface LocalStorageVideo {
   videoId: string
+  title: string
   status: 'null' | 'processing' | 'available'
 }
 
@@ -16,6 +17,7 @@ interface LocalStorageUser {
   mode: boolean
   statistics?: {
     videoId?: string
+    title?: string
     userComments?: string[]
     iconStamps?: string[]
   }[]

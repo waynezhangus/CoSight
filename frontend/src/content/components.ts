@@ -1,7 +1,7 @@
 import { feedBack, secondToStamp, stampToSecond, waitForPromise } from "./utils";
 import * as Tone from 'tone'
 
-function createFloatCard (start, end, reason, videoId) {
+function createFloatCard (start, end, reason, videoId, videoTitle) {
   if (document.querySelector('.float-tip')) {
     document.querySelector<HTMLElement>('.float-tip').style.display = 'block';
     return;
@@ -70,12 +70,11 @@ function createFloatCard (start, end, reason, videoId) {
     waitForPromise('#secondary #contenteditable-root', document.body).then(edit => {
       edit.append(' ' + secondToStamp(video.currentTime))
       edit.focus();
-      window.scroll(0, 0); 
     });
-    feedBack(videoId, 'iconStamps', secondToStamp(video.currentTime))
-    // setTimeout(() => { 
-    //   window.scroll(0, 0); 
-    // }, 1000);
+    feedBack(videoId, videoTitle, 'iconStamps', secondToStamp(video.currentTime))
+    setTimeout(() => { 
+      window.scroll(0, 0); 
+    }, 1000);
   }
 
   function handleHover(event) {

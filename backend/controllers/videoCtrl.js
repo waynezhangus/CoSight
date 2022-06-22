@@ -2,19 +2,21 @@ const asyncHandler = require('express-async-handler')
 const User = require('../models/userModel')
 const Video = require('../models/videoModel');
 const videosRanges = require('./constants');
-const { getCCKeywords, getComments } = require('./api');
+const { getTitle, getCCKeywords, getComments } = require('./api');
 
 // @desc    Request new video info
 // @route   POST /api/youtube
 // @access  Private
 const addVideo = asyncHandler( async (req, res) => {
   const { videoId } = req.body;
+  const title = await getTitle(videoId)
   const ccKeywords = await getCCKeywords(videoId);
   const comments = await getComments(videoId);
   const blackRanges = videosRanges[videoId] ?? [];
 
   const filter = { videoId };
   const update = {
+    title,
     ccKeywords,
     comments,
     blackRanges,

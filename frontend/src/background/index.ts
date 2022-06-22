@@ -11,6 +11,7 @@ let user: LocalStorageUser = {
 
 let video: LocalStorageVideo = {
   videoId: '',
+  title: '',
   status: 'null',
 }
 

@@ -56,7 +56,7 @@ getVideo(videoId).then((videoData) => {
       const {start, end, hasVisited, reason} = curSeg;
       if (!hasVisited) {
         canPause = true;
-        if (tip?.style.display != 'block') createFloatCard(start, end, reason, videoId);
+        if (tip?.style.display != 'block') createFloatCard(start, end, reason, videoId, videoData.title);
         if (prevSeg !== curSeg && card) {
           const timeText = `From ${secondToStamp(start)} to ${secondToStamp(end)}`;
           const reasonText = `Why you are seeing this: ${reason}`;
@@ -97,7 +97,7 @@ getVideo(videoId).then((videoData) => {
     holder.addEventListener('mousedown', () => createStartCard(commentsTimed.slice(0, 5), dialog));
     holder.addEventListener('click', () => createStartCard(commentsTimed.slice(0, 5), dialog));
     dialog.querySelector('#buttons').addEventListener('click', deleteStartCard);
-    dialog.querySelector('#submit-button').addEventListener('click', () => feedBack(videoId, 'userComments', edit.textContent));
+    dialog.querySelector('#submit-button').addEventListener('click', () => feedBack(videoId, videoData.title, 'userComments', edit.textContent));
   })
 
   waitForPromise('#secondary #contenteditable-root', document.body).then(edit => {
@@ -108,7 +108,7 @@ getVideo(videoId).then((videoData) => {
     holder.addEventListener('mousedown', () => createStartCard(commentsTimed.slice(0, 5), dialog));
     holder.addEventListener('click', () => createStartCard(commentsTimed.slice(0, 5), dialog));
     dialog.querySelector('#buttons').addEventListener('click', deleteStartCard);
-    dialog.querySelector('#submit-button').addEventListener('click', () => feedBack(videoId, 'userComments', edit.textContent));
+    dialog.querySelector('#submit-button').addEventListener('click', () => feedBack(videoId, videoData.title, 'userComments', edit.textContent));
     edit.oninput = () => {
       const timeCard = document.querySelector<HTMLElement>('.add-time-card');
       const startCard = document.querySelector('#secondary .easy-start-card');

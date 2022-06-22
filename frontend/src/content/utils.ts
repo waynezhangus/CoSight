@@ -49,7 +49,7 @@ function waitForPromise(selector: string, parent: Element) {
   })
 }
 
-function feedBack(videoId: string, name: string, value: string) {
+function feedBack(videoId, title, name, value) {
   chrome.storage.sync.get('user', ({user}) => {
     if (user.statistics) {
       const vIndex = user.statistics.findIndex(v => v.videoId == videoId)
@@ -60,6 +60,7 @@ function feedBack(videoId: string, name: string, value: string) {
       } else {
         user.statistics.push({
           videoId, 
+          title,
           [name]: [value],
         })
       }
