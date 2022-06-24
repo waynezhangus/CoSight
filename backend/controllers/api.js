@@ -91,6 +91,7 @@ async function getComments(videoId) {
   
   commentsTimed = commentsTimed.map(comment => ({
     ...comment,
+    accLike: 0,
     keywords: keyword_extractor.extract(comment.text, {
       language:"english",
       remove_digits: true,

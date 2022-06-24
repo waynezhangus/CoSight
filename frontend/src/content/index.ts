@@ -81,7 +81,7 @@ getVideo(videoId).then((videoData) => {
     }
     // accessibility mode
     if (user.mode && (prevSeg !== curSeg) && canPause && prevSeg) {
-      readComments(commentsTimed, prevSeg);
+      readComments(videoId, commentsTimed, prevSeg);
       canPause = false;
     }
     prevSeg = curSeg;

@@ -63,6 +63,23 @@ async function addVideo(videoId: string): Promise<VideoData> {
   return data
 }
 
+async function commentVote(videoId, commentId, payload) {
+  const res = await fetch(`${API_URL}youtube/${videoId}/comment/vote`, {
+    method: 'PATCH',
+    mode: 'cors',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({commentId, payload})
+  })
+  if (!res.ok) {
+    throw new Error('Video not found')
+  }
+  // const data: VideoData = await res.json()
+  // return data
+  return null
+}
+
 async function userLogin(form) {
   const res = await fetch(`${API_URL}users/login`, {
     method: 'POST',
@@ -119,6 +136,7 @@ export {
   VideoData,
   getVideo,
   addVideo,
+  commentVote,
   userLogin,
   userRegister,
   userUpdate,

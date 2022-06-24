@@ -9,6 +9,9 @@
   },
   "author": "Wayne Zhang",
   "license": "MIT",
+  "engines": {
+    "node": "16.13.2"
+  },
   "dependencies": {
     "axios": "^0.27.2",
     "bcrypt": "^5.0.1",
@@ -19,6 +22,7 @@
     "jsonwebtoken": "^8.5.1",
     "keyword-extractor": "^0.0.21",
     "mongoose": "^6.2.10",
+    "throng": "^5.0.0",
     "youtube-captions-scraper": "^2.0.0"
   },
   "devDependencies": {

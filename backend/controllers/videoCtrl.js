@@ -6,7 +6,7 @@ const { getTitle, getCCKeywords, getComments } = require('./api');
 
 // @desc    Request new video info
 // @route   POST /api/youtube
-// @access  Private
+// @access  Public
 const addVideo = asyncHandler( async (req, res) => {
   const { videoId } = req.body;
   const title = await getTitle(videoId)
@@ -34,7 +34,7 @@ const addVideo = asyncHandler( async (req, res) => {
 
 // @desc    Get one video info
 // @route   GET /api/youtube/:id
-// @access  Private
+// @access  Public
 const getVideo = asyncHandler( async (req, res) => {
   const video = await Video.findOne({videoId: req.params.id})
   if (!video) {
@@ -45,9 +45,29 @@ const getVideo = asyncHandler( async (req, res) => {
   }
 })
 
+// @desc    Update comment like count
+// @route   PATCH /api/youtube/:id/comment/vote
+// @access  Public
+const commentVote = asyncHandler( async (req, res) => {
+  const { commentId, payload } = req.body
+  const video = await Video.findOneAndUpdate(
+    {videoId: req.params.id},
+    {$inc: {'comments.$[comment].accLike': payload}}, 
+    {new: true, 'arrayFilters': [{'comment._id': commentId}]}
+  )
+  if (!video) {
+    res.status(404);
+    throw new Error('Video not found');
+  } else {
+    res.status(200).json(video);
+  }
+})
+
+
 const videoCtrl = {
   addVideo,
   getVideo,
+  commentVote
 }
 
 module.exports = videoCtrl

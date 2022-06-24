@@ -1,5 +1,6 @@
 import { feedBack, secondToStamp, stampToSecond, waitForPromise } from "./utils";
 import * as Tone from 'tone'
+import { commentVote } from "../background/api";
 
 function createFloatCard (start, end, reason, videoId, videoTitle) {
   if (document.querySelector('.float-tip')) {
@@ -113,17 +114,12 @@ function createFloatCard (start, end, reason, videoId, videoTitle) {
   document.head.appendChild(styleSheet);
 }
 
-function readComments(commentsTimed, { start, end }) {
-  let commentsToRead = commentsTimed.filter(({timestamps}) => {
-    for (let i = 0; i < timestamps.length; i++) {
-      let timeSecond = stampToSecond(timestamps[i]);
-      if (start <= timeSecond && timeSecond < end) {
-        return true;
-      }
-    }
-    return false;
-    // Boolean(timestamps.find((timestamp) => (start <= stampToSecond(timestamp) && stampToSecond(timestamp) < end)));
-  });
+function readComments(videoId, commentsTimed, { start, end }) {
+  let commentsToRead = commentsTimed.filter(({timestamps}) => 
+    Boolean(timestamps.find(timestamp => (
+      start <= stampToSecond(timestamp) && stampToSecond(timestamp) < end
+    )))
+  );
 
   const synth = new Tone.Synth().toDestination();
   //play a middle 'C' for the duration of an 8th note
@@ -134,22 +130,33 @@ function readComments(commentsTimed, { start, end }) {
 
   document.addEventListener('keydown', handleKeyDown)
 
-  let commentIndex = 0;
+  let commentIndex = -1;
   function handleKeyDown (event) {
-    if (event.shiftKey) {
-      const msg = new SpeechSynthesisUtterance();
+    const msg = new SpeechSynthesisUtterance();
+    if (event.key == 'Shift') {
+      commentIndex += 1;
       if (commentIndex == commentsToRead.length) {
+        console.log('in')
         msg.text = 'Those are all the comments!';
+        window.speechSynthesis.speak(msg);
         document.removeEventListener('keydown', handleKeyDown);
+        return null
       } else {
-        msg.text = commentsToRead[commentIndex].text;
-        commentIndex += 1;
+        msg.text = commentsToRead[commentIndex].text; 
       }
-      window.speechSynthesis.speak(msg);
     }
-    else if (event.code == "Space") {
+    else if (event.key == '') {
       document.removeEventListener('keydown', handleKeyDown);
     }
+    else if (event.key == 'ArrowUp' && commentsToRead[commentIndex]) {
+      msg.text = 'Up voted!'
+      commentVote(videoId, commentsToRead[commentIndex]._id, 1)
+    }
+    else if (event.key == 'ArrowDown' && commentsToRead[commentIndex]) {
+      msg.text = 'Down voted!'
+      commentVote(videoId, commentsToRead[commentIndex]._id, -1)
+    }
+    window.speechSynthesis.speak(msg);
   }
 }
 
@@ -348,7 +355,7 @@ function createAccordion(commentsTimed, parent) {
     }
 
     .accordion>.accordion-body {
-      padding: 0px 18px 10px;
+      padding: 0px 30px 10px;
       background-color: white;
       display: block;
       overflow: hidden;

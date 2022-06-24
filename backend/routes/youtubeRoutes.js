@@ -10,4 +10,7 @@ router.route('/')
 router.route('/:id')
   .get(videoCtrl.getVideo)
 
+router.route('/:id/comment/vote')
+  .patch(videoCtrl.commentVote)
+
 module.exports = router
