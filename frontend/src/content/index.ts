@@ -14,6 +14,9 @@ import { createFloatCard,
 import { LocalStorageUser } from '../background/storage';
 
 let user: LocalStorageUser;
+declare global {
+  interface Window { keyDownHandler: any }
+}
 
 chrome.storage.sync.get('user', (data) => user = data.user);
 

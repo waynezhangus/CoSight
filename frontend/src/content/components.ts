@@ -127,11 +127,11 @@ function readComments(videoId, commentsTimed, { start, end }) {
 
   const video = document.getElementsByTagName('video')[0];
   video.pause();
-
-  document.addEventListener('keydown', handleKeyDown)
+  
+  document.removeEventListener("keydown", window.keyDownHandler);
 
   let commentIndex = -1;
-  function handleKeyDown (event) {
+  window.keyDownHandler = function handleKeyDown (event) {
     const msg = new SpeechSynthesisUtterance();
     if (event.key == 'Shift') {
       commentIndex += 1;
@@ -158,6 +158,8 @@ function readComments(videoId, commentsTimed, { start, end }) {
     }
     window.speechSynthesis.speak(msg);
   }
+
+  document.addEventListener('keydown', window.keyDownHandler)
 }
 
 function createAddTimeCard(parent) {
