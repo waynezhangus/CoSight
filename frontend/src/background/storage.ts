@@ -15,6 +15,8 @@ interface LocalStorageUser {
   email?: string
   token?: string
   mode: boolean
+  pauseEnable?: boolean
+  visitedEnable?: boolean
   statistics?: {
     videoId?: string
     title?: string

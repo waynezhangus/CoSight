@@ -4,10 +4,12 @@ const videoSchema = mongoose.Schema(
   {
     videoId: { type: String, required: true },
     title: String,
-    ccKeywords: [
+    captions: [
       {
+        start: Number,
+        dur: Number,
         text: String,
-        timestamps: [String],
+        keywords: [String],
       },
     ],
     // the comments with timestamps
@@ -16,6 +18,7 @@ const videoSchema = mongoose.Schema(
         text: String,
         regLike: Number,
         accLike: Number,
+        score: Number,
         timestamps: [String],
         keywords: [String],
       },

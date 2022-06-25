@@ -17,6 +17,14 @@ const userSchema = mongoose.Schema(
       required: true,
       default: false,
     },
+    pauseEnable: {
+      type: Boolean,
+      default: false,
+    },
+    visitedEnable: {
+      type: Boolean,
+      default: false,
+    },
     statistics: [
       {
         videoId: String,

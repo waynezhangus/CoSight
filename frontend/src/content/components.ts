@@ -9,9 +9,8 @@ function createFloatCard (start, end, reason, videoId, videoTitle) {
   }
   const video = document.getElementsByTagName('video')[0];
   const videoContainer = document.querySelector('.html5-video-player');
-  const FLOATCARD_TITLE = 'Write a quick comment on what you see to help people!';
-  const FLOATCARD_SEG = `From ${secondToStamp(start)} to ${secondToStamp(end)}`;
-  const FLOATCARD_REASON = `Why you are seeing this: ${reason}`;
+  const FLOATCARD_TITLE = 'Click this icon to write an accessible comment!';
+  const FLOATCARD_TIME = `From ${secondToStamp(start)} to ${secondToStamp(end)}:`;
   const styles = `
     .float-tip {
       z-index: 1000;
@@ -45,10 +44,7 @@ function createFloatCard (start, end, reason, videoId, videoTitle) {
 
     .float-card>.text {
       color: #000000;
-    }
-
-    .float-card>.time-text, .float-card>.reason-text {
-      margin-top: 4%; 
+      margin-top: 4%;
     }
   `
   
@@ -94,18 +90,18 @@ function createFloatCard (start, end, reason, videoId, videoTitle) {
   title.classList.add('text');
   title.append(FLOATCARD_TITLE);
 
-  const seg = document.createElement('p');
-  seg.classList.add('time-text', 'text');
-  seg.append(FLOATCARD_SEG);
+  const time = document.createElement('p');
+  time.classList.add('time-text', 'text');
+  time.append(FLOATCARD_TIME);
 
   // why we are showing this float card
-  const rea = document.createElement('p');
-  rea.classList.add('reason-text', 'text');
-  rea.append(FLOATCARD_REASON);
+  const cardReason = document.createElement('p');
+  cardReason.classList.add('reason-text', 'text');
+  cardReason.append(reason);
 
   const floatCard = document.createElement('div');
   floatCard.classList.add('float-card');
-  floatCard.append(title, seg, rea);
+  floatCard.append(title, time, cardReason);
   floatCard.style.display = 'none';
   videoContainer.append(floatCard, tip);
 
@@ -123,10 +119,7 @@ function readComments(videoId, commentsTimed, { start, end }) {
 
   const synth = new Tone.Synth().toDestination();
   //play a middle 'C' for the duration of an 8th note
-  synth.triggerAttackRelease("C4", "8n");
-
-  const video = document.getElementsByTagName('video')[0];
-  video.pause();
+  if (start != 0) synth.triggerAttackRelease("C4", "8n");
   
   document.removeEventListener("keydown", window.keyDownHandler);
 
@@ -134,19 +127,24 @@ function readComments(videoId, commentsTimed, { start, end }) {
   window.keyDownHandler = function handleKeyDown (event) {
     const msg = new SpeechSynthesisUtterance();
     if (event.key == 'Shift') {
+      if (commentsToRead.length == 0) {
+        msg.text = 'There is no comment in this segment';
+        window.speechSynthesis.speak(msg);
+        document.removeEventListener('keydown', window.keyDownHandler);
+        return null
+      }
       commentIndex += 1;
       if (commentIndex == commentsToRead.length) {
-        console.log('in')
         msg.text = 'Those are all the comments!';
         window.speechSynthesis.speak(msg);
-        document.removeEventListener('keydown', handleKeyDown);
+        document.removeEventListener('keydown', window.keyDownHandler);
         return null
       } else {
         msg.text = commentsToRead[commentIndex].text; 
       }
     }
     else if (event.key == '') {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keydown', window.keyDownHandler);
     }
     else if (event.key == 'ArrowUp' && commentsToRead[commentIndex]) {
       msg.text = 'Up voted!'
@@ -179,7 +177,7 @@ function createAddTimeCard(parent) {
 
   const addTimeCard = document.createElement('div');
   addTimeCard.classList.add('add-time-card');
-  addTimeCard.append('Please add a timestamp to make your comment more accessible!');
+  addTimeCard.append('Consider adding a timestamp to make your comment more accessible!');
   parent.insertAdjacentElement('beforebegin', addTimeCard);
 
   const styleSheet = document.createElement("style");
@@ -190,52 +188,36 @@ function createAddTimeCard(parent) {
 function createStartCard(comments, parent) {
   if (parent.querySelector('.easy-start-card')) return;
   const video = document.getElementsByTagName('video')[0];
-  const STARTCARD_TITLE1 = 'Easy Start';
-  const STARTCARD_GUIDES = ['__looks like__', 'The color of __ is __', 'The __ is __'];
-  const STARTCARD_TITLE2 = 'See what others are talking about...';
+
+  const STARTCARD_CAPTION = 'The video also talks about...'
+  const STARTCARD_COMMENT = 'People also talk about...';
 
   const styles = `
     .easy-start-card {
       background-color: rgb(229, 229, 229); 
-      width: 90%;  
-      padding: 2%; 
+      width: 92%;  
+      padding: 3%; 
       margin: 2%; 
       border-radius: 0.5em;
     }
-    .easy-start-card .start-guide {
-      margin-top: 3%;
-      margin-bottom: 3%;
-    }
     .easy-start-card>.comments {
       margin-top: 3%;
-      margin-left: 3%;
-      margin-right: 3%;
+      margin-left: 5%;
+      margin-right: 5%;
     }
     .easy-start-card .timestamp {
       color: blue;
       text-decoration: underline;
     }
     .easy-start-card span{
+      cursor: pointer;
       margin-right: 2%
     }
   `
 
-  const title1 = document.createElement('h3');
-  title1.classList.add('title');
-  title1.append(STARTCARD_TITLE1);
-
-  const guideContainer = document.createElement('div');
-  guideContainer.classList.add('start-guide');
-
-  STARTCARD_GUIDES.forEach(text => {
-    const guideElement = document.createElement('span');
-    guideElement.append(text);
-    guideContainer.appendChild(guideElement);
-  })
-
-  const title2 = document.createElement('h3');
-  title2.classList.add('title');
-  title2.append(STARTCARD_TITLE2);
+  const title = document.createElement('h3');
+  title.classList.add('title');
+  title.append(STARTCARD_COMMENT);
   
   const commentContainer = document.createElement('ul');
   commentContainer.classList.add('comments');
@@ -263,7 +245,7 @@ function createStartCard(comments, parent) {
 
   const easyStartCard = document.createElement('div');
   easyStartCard.classList.add('easy-start-card');
-  easyStartCard.append(title1, guideContainer, title2, commentContainer);
+  easyStartCard.append(title, commentContainer);
   parent.insertAdjacentElement('beforeend', easyStartCard);
 
   const styleSheet = document.createElement("style");
@@ -278,9 +260,9 @@ function deleteStartCard() {
   })
 }
 
-function createRangeBar(blackRanges) {
+function createRangeBar(blackRanges, thresh) {
   // const palette = ['#e3f2fd', '#bbdefb', '#90caf9', '#64b5f6', '#42a5f5', '#2196f3', '#1e88e5', '#1976d2', '#1565c0', '#0d47a1'];
-  const palette = ['#D8D8D8', '#D8D8D8', '#D8D8D8', '#D8D8D8', '#D8D8D8', '#D8D8D8', '#FFC000', '#FFC000', '#FFC000', '#FFC000', ];
+  const palette = ['#f9a825', '#ffeb3b', '#fffde7'];
   // ffea00
   const styles = `
     .range-bar {
@@ -304,10 +286,16 @@ function createRangeBar(blackRanges) {
   const totalTime = blackRanges[blackRanges.length - 1].end;
   let left = 0, width = 0, color = '';
 
+  const rangesCopy = JSON.parse(JSON.stringify(blackRanges));
+  rangesCopy.sort((a, b) => a.score - b.score)
+  const thresh1 = rangesCopy[4].score
+  const thresh2 = thresh
+
   blackRanges.forEach((blackRange, i) => {
     const {start, end, score} = blackRange;
     width = (end - start) / totalTime * 100;
-    color = palette[score == 1 ? 9 : Math.floor(score / 0.1)];
+    color = score < thresh1 ? palette[0] :  
+            score < thresh2 ? palette[1] : palette[2]
 
     const seg = document.createElement('div');
     seg.classList.add('seg');
