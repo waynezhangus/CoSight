@@ -3,15 +3,17 @@ import { feedBack,
         extractTimestamp, 
         getVideoId, 
         secondToStamp, 
-        waitForPromise } from './utils'
+        waitForPromise, 
+        stampToSecond} from './utils'
 import { createFloatCard, 
         readComments, 
         createStartCard, 
-        deleteStartCard,
         createRangeBar,
         createAccordion, 
-        createAddTimeCard,} from './components'
+        createAddTimeCard,
+        editStartCard,} from './components'
 import { LocalStorageUser } from '../background/storage';
+import keyword_extractor from 'keyword-extractor';
 
 let user: LocalStorageUser;
 declare global {
@@ -29,6 +31,14 @@ chrome.storage.onChanged.addListener((changes, area) => {
 // Get the id of the current Youtube video
 const videoId = getVideoId(window.location.href);
 const thresh = 0.5
+const language: any = 'english'
+const keywordOptions = {
+  language,
+  remove_digits: true,
+  return_changed_case: true,
+  remove_duplicates: true,
+  return_chained_words: false
+}
 
 getVideo(videoId).then((videoData) => {
   if (!videoData) return;
@@ -122,43 +132,77 @@ getVideo(videoId).then((videoData) => {
     prevSeg = curSeg;
   }
 
-  const COMMENT_HOLDER = ['What are the most significant visuals to understand the video?',
+  function startCard(location) {
+    let captionsMatch = captions.slice(3, 6)
+    let commentsMatch = commentsTimed.slice(0, 3)
+    let keywords = []
+    const COMMENT_HOLDER = ['What are the most significant visuals to understand the video?',
                           'Which text or visual concepts that are not explained in the speech?',
                           'Write a comment with visual descriptions to help the blind audiences!'];
-
-  waitForPromise('#primary #contenteditable-root', document.body).then(edit => {
-    edit.setAttribute('aria-label', COMMENT_HOLDER[Math.floor(Math.random()*3)]);
-    const holder = document.querySelector('#primary #placeholder-area');
-    const dialog = document.querySelector('#primary #comment-dialog');
-    createStartCard(commentsTimed.slice(0, 5), dialog);
-    holder.addEventListener('mousedown', () => createStartCard(commentsTimed.slice(0, 5), dialog));
-    holder.addEventListener('click', () => createStartCard(commentsTimed.slice(0, 5), dialog));
-    dialog.querySelector('#buttons').addEventListener('click', () => {
-      deleteStartCard;
+    waitForPromise(`${location} #contenteditable-root`, document.body).then(edit => {
       edit.setAttribute('aria-label', COMMENT_HOLDER[Math.floor(Math.random()*3)]);
-    });
-    dialog.querySelector('#submit-button').addEventListener('click', () => feedBack(videoId, videoData.title, 'userComments', edit.textContent));
-  })
+      const dialog = document.querySelector<HTMLElement>(`${location} #comment-dialog`);
+      createStartCard(dialog);
+      editStartCard(captionsMatch, commentsMatch, keywords, dialog)
 
-  waitForPromise('#secondary #contenteditable-root', document.body).then(edit => {
-    edit.setAttribute('aria-label', COMMENT_HOLDER[Math.floor(Math.random()*3)]);
-    const holder = document.querySelector('#secondary #placeholder-area');
-    const dialog = document.querySelector('#secondary #comment-dialog');
-    createStartCard(commentsTimed.slice(0, 5), dialog);
-    holder.addEventListener('mousedown', () => createStartCard(commentsTimed.slice(0, 5), dialog));
-    holder.addEventListener('click', () => createStartCard(commentsTimed.slice(0, 5), dialog));
-    dialog.querySelector('#buttons').addEventListener('click', () => {
-      deleteStartCard;
-      edit.setAttribute('aria-label', COMMENT_HOLDER[Math.floor(Math.random()*3)]);
-    });
-    dialog.querySelector('#submit-button').addEventListener('click', () => feedBack(videoId, videoData.title, 'userComments', edit.textContent));
-    edit.oninput = () => {
-      const timeCard = document.querySelector<HTMLElement>('.add-time-card');
-      const startCard = document.querySelector('#secondary .easy-start-card');
-      if (!extractTimestamp(edit.textContent)) createAddTimeCard(startCard);
-      else if (timeCard) timeCard.style.display = 'none';
-    }
-  })
+      dialog.querySelector('#buttons').addEventListener('click', () => {
+        const timeCard = dialog.querySelector<HTMLElement>('.add-time-card');
+        if (timeCard) timeCard.style.display = 'none';
+        edit.setAttribute('aria-label', COMMENT_HOLDER[Math.floor(Math.random()*3)]);
+        const capRandom = Math.floor(Math.random()*(captions.length-4))
+        const comRandom = Math.floor(Math.random()*(commentsTimed.length-4))
+        captionsMatch = captions.slice(capRandom, capRandom+3)
+        commentsMatch = commentsTimed.slice(comRandom, comRandom+3)
+        keywords = []
+        editStartCard(captionsMatch, commentsMatch, keywords, dialog)
+      });
+      dialog.querySelector('#submit-button').addEventListener('click', () => {
+        feedBack(videoId, videoData.title, 'userComments', edit.textContent)
+      });
+
+      let wordLength = 1
+      edit.oninput = () => {
+        let captionsMatch = []
+        let commentsMatch = []
+        const words = edit.textContent.split(' ')
+        const timeCard = dialog.querySelector<HTMLElement>('.add-time-card');
+        if (words.length != wordLength) {
+          //timestamp match
+          const timestamps = extractTimestamp(edit.textContent)
+          if (!timestamps) createAddTimeCard(dialog);
+          else {
+            if (timeCard) timeCard.style.display = 'none';
+            timestamps.forEach(timestamp => {
+              const time = stampToSecond(timestamp)
+              let a = captions.filter(({start, dur}) => (
+                start <= time && time < (start + dur)
+              ))
+              captionsMatch.push(...a)
+              let b = commentsTimed.filter(({timestamps}) => 
+                Boolean(timestamps.find(timestamp => (
+                  (time - 5) <= stampToSecond(timestamp) && stampToSecond(timestamp) < (time + 5)
+                )))
+              )
+              commentsMatch.push(...b)
+            })
+          }
+          //keywords match
+          keywords = keyword_extractor.extract(edit.textContent, keywordOptions)
+          keywords.forEach(keyword => {
+            let a = captions.filter(({keywords}) => keywords.includes(keyword))
+            captionsMatch.push(...a)
+            let b = commentsTimed.filter(({keywords}) => keywords.includes(keyword))
+            commentsMatch.push(...b)
+          })
+          editStartCard(captionsMatch, commentsMatch, keywords, dialog)
+        }
+        wordLength = words.length
+      }
+    })
+  }
+
+  startCard('#primary');
+  startCard('#secondary');
 
   waitForPromise('#comments', document.body).then(parent => {
     createAccordion(commentsTimed, parent);
