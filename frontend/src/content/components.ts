@@ -1,8 +1,12 @@
 import { feedBack, secondToStamp, stampToSecond, waitForPromise } from "./utils";
 import * as Tone from 'tone'
 import { commentVote } from "../background/api";
+import Mark from 'mark.js';
 
 function createFloatCard (start, end, reason, videoId, videoTitle) {
+  const FLOATCARD_TITLE = 'Click this icon to write an accessible comment!';
+  const FLOATCARD_TIME = `From ${secondToStamp(start)} to ${secondToStamp(end)}:`;
+
   const prevTip = document.querySelector<HTMLElement>('.float-tip')
   if (prevTip) {
     prevTip.style.display = 'block';
@@ -10,8 +14,7 @@ function createFloatCard (start, end, reason, videoId, videoTitle) {
   }
   const video = document.getElementsByTagName('video')[0];
   const videoContainer = document.querySelector('.html5-video-player');
-  const FLOATCARD_TITLE = 'Click this icon to write an accessible comment!';
-  const FLOATCARD_TIME = `From ${secondToStamp(start)} to ${secondToStamp(end)}:`;
+  
   const styles = `
     .float-tip {
       z-index: 1000;
@@ -162,27 +165,61 @@ function readComments(videoId, commentsTimed, { start, end }) {
 }
 
 function createAddTimeCard(parent: HTMLElement) {
+  const TIMECARD = 'Consider adding a timestamp to make your comment more accessible!'
+
   const prevTimeCard = parent.querySelector<HTMLElement>('.add-time-card')
   if (prevTimeCard) {
-    prevTimeCard.style.display = 'block';
+    prevTimeCard.style.display = 'inline-block';
     return;
   }
 
   const styles = `
     .add-time-card {
       background-color: rgb(229, 229, 229); 
-      width: 45%; 
+      width: 40%; 
       padding: 3%; 
       margin: 2%; 
       border-radius: 0.5em;
+      display: inline-block;
     }
   `
   const startCard = parent.querySelector('.easy-start-card');
 
   const addTimeCard = document.createElement('div');
   addTimeCard.classList.add('add-time-card');
-  addTimeCard.append('Consider adding a timestamp to make your comment more accessible!');
+  addTimeCard.append(TIMECARD);
   startCard.insertAdjacentElement('beforebegin', addTimeCard);
+
+  const styleSheet = document.createElement("style");
+  styleSheet.innerText = styles;
+  document.head.appendChild(styleSheet);
+}
+
+function createClarifyCard(parent: HTMLElement) {
+  const CLARIFYCARD = 'Try to avoid using ambiguous pronouns, use the full names or concepts instead.'
+
+  const prevClarifyCard = parent.querySelector<HTMLElement>('.clarify-card')
+  if (prevClarifyCard) {
+    prevClarifyCard.style.display = 'inline-block';
+    return;
+  }
+
+  const styles = `
+    .clarify-card {
+      background-color: rgb(229, 229, 229); 
+      width: 40%; 
+      padding: 3%; 
+      margin: 2%; 
+      border-radius: 0.5em;
+      display: inline-block;
+    }
+  `
+  const startCard = parent.querySelector('.easy-start-card');
+
+  const clarifyCard = document.createElement('div');
+  clarifyCard.classList.add('clarify-card');
+  clarifyCard.append(CLARIFYCARD);
+  startCard.insertAdjacentElement('beforebegin', clarifyCard);
 
   const styleSheet = document.createElement("style");
   styleSheet.innerText = styles;
@@ -196,7 +233,7 @@ function createStartCard(parent: HTMLElement) {
   const styles = `
     .easy-start-card {
       background-color: rgb(229, 229, 229); 
-      width: 92%;  
+      width: 90%;  
       padding: 3%; 
       margin: 2%; 
       border-radius: 0.5em;
@@ -259,50 +296,61 @@ function editStartCard(captions, comments, keywords, parent: HTMLElement) {
   const captionContainer = document.createElement('ul');
   captionContainer.classList.add('capContainer');
 
-  captions.forEach(caption => {
-    const captionElement = document.createElement('li');
-    const timestamp = secondToStamp(caption.start)
-    const stampElement = document.createElement('span');
-    stampElement.classList.add('timestamp');
-    stampElement.append(timestamp);
-    stampElement.onclick = () => {
-      window.scrollTo(0, 0);
-      video.currentTime = caption.start;
-      video.play();
-      waitForPromise('#secondary #contenteditable-root', document.body).then(edit => {
-        edit.append(' ' + timestamp)
-        edit.focus();
-      });
-    }
-    captionElement.appendChild(stampElement);
-
-    captionElement.append(caption.text);
+  if (captions.length == 0) {
+    const captionElement = document.createElement('div');
+    captionElement.append('No matches found.');
     captionContainer.appendChild(captionElement);
-  })
-  
-  const commentContainer = document.createElement('ul');
-  commentContainer.classList.add('comContainer');
-
-  comments.forEach(comment => {
-    const commentElement = document.createElement('li');
-    comment.timestamps.forEach(timestamp => {
+  } else {
+    captions.forEach(caption => {
+      const captionElement = document.createElement('li');
+      const timestamp = secondToStamp(caption.start)
       const stampElement = document.createElement('span');
       stampElement.classList.add('timestamp');
       stampElement.append(timestamp);
       stampElement.onclick = () => {
         window.scrollTo(0, 0);
-        // video.currentTime = stampToSecond(timestamp);
-        // video.play();
+        video.currentTime = caption.start;
+        video.play();
         waitForPromise('#secondary #contenteditable-root', document.body).then(edit => {
           edit.append(' ' + timestamp)
           edit.focus();
         });
       }
-      commentElement.appendChild(stampElement);
+      captionElement.appendChild(stampElement);
+      captionElement.append(caption.text);
+      captionContainer.appendChild(captionElement);
     })
-    commentElement.append(comment.text);
+  }
+  
+  const commentContainer = document.createElement('ul');
+  commentContainer.classList.add('comContainer');
+
+  if (comments.length == 0) {
+    const commentElement = document.createElement('div');
+    commentElement.append('No matches found.');
     commentContainer.appendChild(commentElement);
-  })
+  } else {
+    comments.forEach(comment => {
+      const commentElement = document.createElement('li');
+      comment.timestamps.forEach(timestamp => {
+        const stampElement = document.createElement('span');
+        stampElement.classList.add('timestamp');
+        stampElement.append(timestamp);
+        stampElement.onclick = () => {
+          window.scrollTo(0, 0);
+          video.currentTime = stampToSecond(timestamp);
+          video.play();
+          waitForPromise('#secondary #contenteditable-root', document.body).then(edit => {
+            edit.append(' ' + timestamp)
+            edit.focus();
+          });
+        }
+        commentElement.appendChild(stampElement);
+      })
+      commentElement.append(comment.text);
+      commentContainer.appendChild(commentElement);
+    })
+  }
 
   const capTitle = parent.querySelector('.capTitle')
   capTitle.insertAdjacentElement('afterend', captionContainer);
@@ -313,8 +361,14 @@ function editStartCard(captions, comments, keywords, parent: HTMLElement) {
   const styleSheet = document.createElement("style");
   styleSheet.innerText = styles;
   document.head.appendChild(styleSheet);
+
+  let markInstance = new Mark(parent.querySelector('.easy-start-card'));
+  markInstance.unmark({
+    done: () => {
+      markInstance.mark(keywords);
+    }
+  });
 }
-  
 
 function createRangeBar(blackRanges, thresh) {
   // const palette = ['#e3f2fd', '#bbdefb', '#90caf9', '#64b5f6', '#42a5f5', '#2196f3', '#1e88e5', '#1976d2', '#1565c0', '#0d47a1'];
@@ -499,4 +553,5 @@ export {
   createRangeBar,
   createAccordion,
   createAddTimeCard,
+  createClarifyCard,
 }

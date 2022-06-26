@@ -11,7 +11,8 @@ import { createFloatCard,
         createRangeBar,
         createAccordion, 
         createAddTimeCard,
-        editStartCard,} from './components'
+        editStartCard,
+        createClarifyCard,} from './components'
 import { LocalStorageUser } from '../background/storage';
 import keyword_extractor from 'keyword-extractor';
 
@@ -139,6 +140,7 @@ getVideo(videoId).then((videoData) => {
     const COMMENT_HOLDER = ['What are the most significant visuals to understand the video?',
                           'Which text or visual concepts that are not explained in the speech?',
                           'Write a comment with visual descriptions to help the blind audiences!'];
+    const pronouns = /\b((it)|(this)|(that)|(these)|(those))\b/
     waitForPromise(`${location} #contenteditable-root`, document.body).then(edit => {
       edit.setAttribute('aria-label', COMMENT_HOLDER[Math.floor(Math.random()*3)]);
       const dialog = document.querySelector<HTMLElement>(`${location} #comment-dialog`);
@@ -162,39 +164,57 @@ getVideo(videoId).then((videoData) => {
 
       let wordLength = 1
       edit.oninput = () => {
-        let captionsMatch = []
-        let commentsMatch = []
+        captionsMatch = []
+        commentsMatch = []
+        keywords = []
         const words = edit.textContent.split(' ')
         const timeCard = dialog.querySelector<HTMLElement>('.add-time-card');
+        const clarifyCard = dialog.querySelector<HTMLElement>('.clarify-card');
         if (words.length != wordLength) {
-          //timestamp match
-          const timestamps = extractTimestamp(edit.textContent)
-          if (!timestamps) createAddTimeCard(dialog);
-          else {
+          if (words.length == 1) {
+            const capRandom = Math.floor(Math.random()*(captions.length-4))
+            const comRandom = Math.floor(Math.random()*(commentsTimed.length-4))
+            captionsMatch = captions.slice(capRandom, capRandom+3)
+            commentsMatch = commentsTimed.slice(comRandom, comRandom+3)
+            keywords = []
+            editStartCard(captionsMatch, commentsMatch, keywords, dialog)
+            if (clarifyCard) clarifyCard.style.display = 'none';
             if (timeCard) timeCard.style.display = 'none';
-            timestamps.forEach(timestamp => {
-              const time = stampToSecond(timestamp)
-              let a = captions.filter(({start, dur}) => (
-                start <= time && time < (start + dur)
-              ))
+          } else {
+            //pronouns match
+            if (pronouns.test(edit.textContent)) createClarifyCard(dialog);
+            else if (clarifyCard) clarifyCard.style.display = 'none';
+
+            //timestamp match
+            const timestamps = extractTimestamp(edit.textContent)
+            if (!timestamps) createAddTimeCard(dialog); 
+            else {
+              if (timeCard) timeCard.style.display = 'none';
+              timestamps.forEach(timestamp => {
+                const time = stampToSecond(timestamp)
+                let a = captions.filter(({start, dur}) => (
+                  start <= time && time < (start + dur)
+                ))
+                captionsMatch.push(...a)
+                let b = commentsTimed.filter(({timestamps}) => 
+                  Boolean(timestamps.find(timestamp => (
+                    (time - 5) <= stampToSecond(timestamp) && stampToSecond(timestamp) < (time + 5)
+                  )))
+                )
+                commentsMatch.push(...b)
+              })
+            }
+
+            //keywords match
+            keywords = keyword_extractor.extract(edit.textContent, keywordOptions)
+            keywords.forEach(keyword => {
+              let a = captions.filter(({keywords}) => keywords.includes(keyword))
               captionsMatch.push(...a)
-              let b = commentsTimed.filter(({timestamps}) => 
-                Boolean(timestamps.find(timestamp => (
-                  (time - 5) <= stampToSecond(timestamp) && stampToSecond(timestamp) < (time + 5)
-                )))
-              )
+              let b = commentsTimed.filter(({keywords}) => keywords.includes(keyword))
               commentsMatch.push(...b)
             })
+            editStartCard(captionsMatch, commentsMatch, keywords, dialog)
           }
-          //keywords match
-          keywords = keyword_extractor.extract(edit.textContent, keywordOptions)
-          keywords.forEach(keyword => {
-            let a = captions.filter(({keywords}) => keywords.includes(keyword))
-            captionsMatch.push(...a)
-            let b = commentsTimed.filter(({keywords}) => keywords.includes(keyword))
-            commentsMatch.push(...b)
-          })
-          editStartCard(captionsMatch, commentsMatch, keywords, dialog)
         }
         wordLength = words.length
       }

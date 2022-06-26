@@ -26,7 +26,7 @@ function secondToStamp(time) {
 // Extract timestamps from a comment
 // Assume the videos do not exceed 1 hour
 function extractTimestamp(comment) {
-  return comment.match(/[0-5]?[0-9]:[0-5][0-9]/g);
+  return comment.match(/\b[0-5]?\d:[0-5]\d\b/g);
 }
 
 function waitForPromise(selector: string, parent: Element) {

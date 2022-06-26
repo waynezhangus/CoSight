@@ -71,7 +71,7 @@ async function getComments(videoId) {
   allComments = allComments.map(comment => ({
     text: comment['textOriginal'],
     regLike: comment['likeCount'],
-    timestamps: comment['textOriginal'].match(/\b[0-5]?[0-9]:[0-5][0-9]\b/g),
+    timestamps: comment['textOriginal'].match(/\b[0-5]?\d:[0-5]\d\b/g),
   }))
 
   let commentsTimed = allComments.filter(comment => Boolean(comment['timestamps']))
