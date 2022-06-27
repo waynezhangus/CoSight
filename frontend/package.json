@@ -33,6 +33,7 @@
     "@mui/material": "^5.8.5",
     "keyword-extractor": "^0.0.23",
     "mark.js": "^8.11.1",
+    "markdown-to-jsx": "^7.1.7",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "^6.3.0",
