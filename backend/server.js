@@ -4,7 +4,7 @@ const dotenv = require('dotenv').config()
 const { errorHandler } = require('./middleware/errorMid')
 const connectDB = require('./config/db')
 const cors = require('cors')
-const throng = require('throng')
+// const throng = require('throng')
 // const WORKERS = process.env.WEB_CONCURRENCY ?? 1
 const PORT = process.env.PORT ?? 5000
 
