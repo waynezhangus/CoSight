@@ -44,6 +44,16 @@ const keywordOptions = {
 getVideo(videoId).then((videoData) => {
   if (!videoData) return;
 
+  const blackRanges = videoData.blackRanges
+  const totalTime = blackRanges[blackRanges.length - 1].end;
+
+  blackRanges.forEach((range, index) => {
+    if ((range.start <= 15 || range.end >= (totalTime - 15) ||
+        (range.end-range.start) <= 1) && range.score < 0.49) {
+      videoData.blackRanges[index].score = 0.49
+    }
+  })
+
   const videoSeg = videoData.blackRanges.filter(({score}) => score < thresh);
   let commentsTimed = videoData.comments
   let captions = videoData.captions
@@ -140,7 +150,7 @@ getVideo(videoId).then((videoData) => {
     const COMMENT_HOLDER = ['What are the most significant visuals to understand the video?',
                           'Which text or visual concepts that are not explained in the speech?',
                           'Write a comment with visual descriptions to help the blind audiences!'];
-    const pronouns = /\b((it)|(this)|(that)|(these)|(those))\b/
+    const pronouns = /\b((it)|(this)|(that)|(these)|(those)|(here))\b/
     waitForPromise(`${location} #contenteditable-root`, document.body).then(edit => {
       edit.setAttribute('aria-label', COMMENT_HOLDER[Math.floor(Math.random()*3)]);
       const dialog = document.querySelector<HTMLElement>(`${location} #comment-dialog`);
@@ -189,7 +199,7 @@ getVideo(videoId).then((videoData) => {
             const timestamps = extractTimestamp(edit.textContent)
             if (!timestamps) createAddTimeCard(dialog); 
             else {
-              if (timeCard) timeCard.style.display = 'none';
+              if (timeCard) timeCard.style.display = 'none';    
               timestamps.forEach(timestamp => {
                 const time = stampToSecond(timestamp)
                 let a = captions.filter(({start, dur}) => (
@@ -207,12 +217,12 @@ getVideo(videoId).then((videoData) => {
 
             //keywords match
             keywords = keyword_extractor.extract(edit.textContent, keywordOptions)
-            keywords.forEach(keyword => {
-              let a = captions.filter(({keywords}) => keywords.includes(keyword))
+            if (keywords.length != 0) {
+              let a = captions.filter(caption => keywords.every(keyword => caption.keywords.includes(keyword)))
               captionsMatch.push(...a)
-              let b = commentsTimed.filter(({keywords}) => keywords.includes(keyword))
+              let b = commentsTimed.filter(comment => keywords.every(keyword => comment.keywords.includes(keyword)))
               commentsMatch.push(...b)
-            })
+            }
             editStartCard(captionsMatch, commentsMatch, keywords, dialog)
           }
         }

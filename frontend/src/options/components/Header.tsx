@@ -25,7 +25,7 @@ function Header() {
     chrome.storage.sync.get('user', (data) => setUser(data.user));
   }, [])
 
-  const routeMatch = useRouteMatch(['/intro', '/settings', '/profile']);
+  const routeMatch = useRouteMatch(['/intro', '/manual', '/settings', '/profile']);
   const currentTab = routeMatch?.pattern?.path;
 
   const [anchorElUser, setAnchorElUser] = React.useState(null)
@@ -59,6 +59,7 @@ function Header() {
             variant="fullWidth"
         >
           <Tab label='Intro' value='/intro' component={Link} to='/intro' />
+          <Tab label='Manual' value='/manual' component={Link} to='/manual' />
           <Tab label='Settings' value='/settings' component={Link} to='/settings' />
           <Tab label='Profile' value='/profile' component={Link} to='/profile' />
         </Tabs>

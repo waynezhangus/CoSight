@@ -71,7 +71,16 @@ export default function Settings()
           <Typography sx={{ width: '33%', flexShrink: 0, pl: 1.3 }}>Video Settings</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          
+          <FormGroup sx={{ pl: 1.2, flexDirection: 'column' }}>
+            <FormControlLabel
+              control={<Switch name='pauseEnable' checked={user.pauseEnable} onChange={onSwitch} />} 
+              label={'Allow auto-pause video'} 
+            />
+            <FormControlLabel
+              control={<Switch name='visitedEnable' checked={user.visitedEnable} onChange={onSwitch} />} 
+              label={'Remember visited segments'} 
+            />
+          </FormGroup>
         </AccordionDetails>
       </Accordion>
     </Container>

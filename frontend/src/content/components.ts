@@ -396,9 +396,9 @@ function createRangeBar(blackRanges, thresh) {
   const totalTime = blackRanges[blackRanges.length - 1].end;
   let left = 0, width = 0, color = '';
 
-  const rangesCopy = JSON.parse(JSON.stringify(blackRanges));
+  let rangesCopy = JSON.parse(JSON.stringify(blackRanges));
   rangesCopy.sort((a, b) => a.score - b.score)
-  const thresh1 = rangesCopy[4].score
+  const thresh1 = rangesCopy[5].score
   const thresh2 = thresh
 
   blackRanges.forEach((blackRange, i) => {
