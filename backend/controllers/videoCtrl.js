@@ -9,10 +9,14 @@ const { getTitle, getCaptions, getComments} = require('./api');
 // @access  Public
 const addVideo = asyncHandler( async (req, res) => {
   const { videoId } = req.body;
-  const title = await getTitle(videoId)
+  const blackRanges = videosRanges[videoId] ?? [];
+  if (blackRanges == []) {
+    res.status(404).json('message: video not tested');
+    return null;
+  }
+  const title = await getTitle(videoId);
   const captions = await getCaptions(videoId);
   const comments = await getComments(videoId);
-  const blackRanges = videosRanges[videoId] ?? [];
 
   const filter = { videoId };
   const update = {
@@ -28,7 +32,7 @@ const addVideo = asyncHandler( async (req, res) => {
     setDefaultsOnInsert: true
   };
 
-  const video = await Video.findOneAndUpdate(filter, update, options)
+  const video = await Video.findOneAndUpdate(filter, update, options);
   res.status(200).json(video);
 })
 

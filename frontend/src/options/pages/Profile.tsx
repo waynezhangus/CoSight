@@ -5,10 +5,12 @@ import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import Container from '@mui/material/Container'
+import Divider from '@mui/material/Divider';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import Link from '@mui/material/Link';
 import TreeView from '@mui/lab/TreeView'
 import TreeItem from '@mui/lab/TreeItem'
+import Typography from '@mui/material/Typography';
 
 export default function Profile() {
   const [user, setUser] = React.useState<LocalStorageUser | null>(null)
@@ -69,6 +71,10 @@ export default function Profile() {
 
   return (
     <Container sx={{ py: 8 }} maxWidth="md">
+      <Typography variant="h5" gutterBottom>
+        Your comments
+      </Typography>
+      <Divider />
       <Box>
         <Button onClick={handleExpandClick}>
           {expanded.length === 0 ? 'Expand all' : 'Collapse all'}

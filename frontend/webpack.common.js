@@ -27,6 +27,10 @@ module.exports = {
         //   loader: 'url-loader'
         // },
         type: 'asset/resource'
+      },
+      {
+        test: /\.md$/,
+        use: 'raw-loader'
       }
     ]
   },

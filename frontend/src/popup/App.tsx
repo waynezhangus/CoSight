@@ -42,7 +42,7 @@ export default function App()
               sx={{ mt: 3, mb: 2 }}
               variant="contained" 
               color="inherit"
-              disabled={false} 
+              disabled={true} 
               onClick={onClick}>
               {videoFound ? <CheckIcon /> : 'Request'}
             </Button>

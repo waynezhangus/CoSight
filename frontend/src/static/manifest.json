@@ -1,6 +1,6 @@
 {
   "name": "CoSight",
-  "description": "Chrome extension for accessibility",
+  "description": "Chrome extension for Youtube accessibility",
   "version": "1.0.0",
   "manifest_version": 3,
   "icons": {
