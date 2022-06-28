@@ -29,7 +29,7 @@ const videoSchema = mongoose.Schema(
         },
         reason: {
           type: String,
-          default: "mismatch between video and audio",
+          default: "specific visual details not covered by speech",
         },
       },
     ],
