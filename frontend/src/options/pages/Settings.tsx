@@ -23,7 +23,7 @@ export default function Settings()
   }, [])
 
   React.useEffect(() => {
-    if(user) {
+    if(user?._id) {
       chrome.storage.sync.set({user});
       userUpdate(user);
     }
@@ -38,7 +38,7 @@ export default function Settings()
     setUser({...user, [name]:checked})
   }
 
-  if (!user) {
+  if (!user?._id) {
     return null
   }
 
@@ -71,7 +71,16 @@ export default function Settings()
           <Typography sx={{ width: '33%', flexShrink: 0, pl: 1.3 }}>Video Settings</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          
+          <FormGroup sx={{ pl: 1.2, flexDirection: 'column' }}>
+            <FormControlLabel
+              control={<Switch name='pauseEnable' checked={user.pauseEnable} onChange={onSwitch} />} 
+              label={'Allow auto-pause video'} 
+            />
+            <FormControlLabel
+              control={<Switch name='visitedEnable' checked={user.visitedEnable} onChange={onSwitch} />} 
+              label={'Remember visited segments'} 
+            />
+          </FormGroup>
         </AccordionDetails>
       </Accordion>
     </Container>

@@ -1,49 +1,47 @@
 const getSubtitles = require('youtube-captions-scraper').getSubtitles;
 const keyword_extractor = require("keyword-extractor");
-const axios = require('axios')
+const axios = require('axios');
+const Video = require('../models/videoModel');
 
-async function getCCKeywords(videoId) {
-  const captions = await getSubtitles({ videoID: videoId });
-  caption_string = captions.reduce((sum, cur) => sum + cur['text'] + ' ', '');
-  
+const DDLSwitch = false
+const keywordOptions = {
+  language:"english",
+  remove_digits: true,
+  return_changed_case: true,
+  remove_duplicates: true,
+  return_chained_words: false
+}
+let captionString = ''
+
+async function getTitle(videoId) {
   const config = {
-    auth: {
-      username: "apikey",  
-      password: process.env.NLP_APIKEY
-    },
     headers: {
-      'Content-Type': 'application/json'
+      'Accept': 'application/json'
     },
-  }
-  
-  const response = await axios.post(process.env.NLP_URL, {
-    "text": caption_string,
-    "features": {
-      "keywords": {
-        "emotion": true,
-        "sentiment": true,
-        "limit": 10
-      }
+    params: {
+      key: process.env.YT_APIKEY,
+      part: 'snippet',
+      id: videoId,
     }
-  }, config)
+  }
+  const response = await axios.get(process.env.YT_VID_URL, config);
+  return response.data['items'][0]['snippet']['title']
+}
 
-  let ccKeywords = [];
-  response.data['keywords'].forEach(({text}) => {
-    let timestamps = [];
-    captions.forEach(caption => {
-      if (caption['text'].includes(text)) timestamps.push(caption['start']);
-    })
-    ccKeywords.push({
-      text,
-      timestamps,
-    })
-  })
+async function getCaptions(videoId) {
+  let captions = await getSubtitles({ videoID: videoId });
+  captionString = captions.reduce((sum, cur) => sum + cur['text'] + ' ', '');
 
-  return ccKeywords;
+  captions = captions.map(caption => ({
+    ...caption,
+    keywords: keyword_extractor.extract(caption.text, keywordOptions),
+  }))
+
+  return captions;
 }
 
 async function getComments(videoId) {
-  
+
   let nextPageToken = null;
   let allComments = [];
   do {
@@ -52,14 +50,19 @@ async function getComments(videoId) {
         'Accept': 'application/json'
       },
       params: {
-        key: process.env.YOUTUBE_APIKEY,
+        key: process.env.YT_APIKEY,
         part: 'snippet',
         videoId,
         maxResults: 100,
         pageToken: nextPageToken,
       }
     }
-    const response = await axios.get(process.env.YOUTUBE_URL, config);
+    let response
+    try {
+      response = await axios.get(process.env.YT_COM_URL, config);
+    } catch (error) {
+      throw new Error(error);
+    }
     nextPageToken = response.data['nextPageToken'];
     commentPage = response.data['items'].map(item => item["snippet"]["topLevelComment"]["snippet"])
     allComments = [...allComments, ...commentPage];
@@ -67,28 +70,50 @@ async function getComments(videoId) {
   
   allComments = allComments.map(comment => ({
     text: comment['textOriginal'],
-    likeCount: comment['likeCount'],
-    timestamps: comment['textOriginal'].match(/\b[0-5]?[0-9]:[0-5][0-9]\b/g),
+    regLike: comment['likeCount'],
+    timestamps: comment['textOriginal'].match(/\b[0-5]?\d:[0-5]\d\b/g),
   }))
 
-  commentsTimed = allComments.filter(comment => Boolean(comment['timestamps']))
+  let commentsTimed = allComments.filter(comment => Boolean(comment['timestamps']))
   
-  commentsTimed = commentsTimed.map(comment => ({
-    ...comment,
-    keywords: keyword_extractor.extract(comment.text, {
-      language:"english",
-      remove_digits: false,
-      return_changed_case: false,
-      remove_duplicates: true,
-      return_chained_words: true
-    }),
+  commentsTimed = await Promise.all(commentsTimed.map(async (comment) => {
+    let response
+    if (DDLSwitch) {
+      try {
+        response = await axios.get(process.env.DDL_URL, {
+          params: {
+            token: process.env.DDL_TOKEN,
+            text1: captionString,
+            text2: comment.text
+          }
+        })
+      } catch (error) {
+        throw new Error(error);
+      }
+    }
+    return ({
+      ...comment,
+      accLike: 0,
+      score: response?.data?.similarity ?? 0,
+      keywords: keyword_extractor.extract(comment.text, keywordOptions),
+    })
   }))
 
-  commentsTimed.sort((a, b) => (b.likeCount - a.likeCount))
+  const video = await Video.findOne({ videoId })
+  if (video) {
+    const prevComments = video.comments
+    commentsTimed.forEach(comment => {
+      prev = prevComments.find(prevComment => prevComment.text == comment.text)
+      comment.accLike = prev?.accLike ?? 0
+    })
+  }
+
+  commentsTimed.sort((a, b) => (b.regLike - a.regLike))
   return commentsTimed
 }
 
 module.exports = { 
-  getCCKeywords,
+  getTitle,
+  getCaptions,
   getComments
 }

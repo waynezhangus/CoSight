@@ -3,17 +3,22 @@ const mongoose = require('mongoose')
 const videoSchema = mongoose.Schema(
   {
     videoId: { type: String, required: true },
-    ccKeywords: [
+    title: String,
+    captions: [
       {
+        start: Number,
+        dur: Number,
         text: String,
-        timestamps: [String],
+        keywords: [String],
       },
     ],
     // the comments with timestamps
     comments: [
       {
         text: String,
-        likeCount: Number,
+        regLike: Number,
+        accLike: Number,
+        score: Number,
         timestamps: [String],
         keywords: [String],
       },

@@ -3,9 +3,9 @@ import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Markdown from '../components/Markdown';
-import post from '../markdowns/intro.md';
+import post from '../markdowns/manual.md';
 
-export default function Intro() {
+export default function Manual() {
   
   return (
     <Grid
@@ -20,7 +20,7 @@ export default function Intro() {
       }}
     >
       <Typography variant="h5" gutterBottom>
-        Introduction
+        User Manual
       </Typography>
       <Divider />
       <Markdown className="markdown">

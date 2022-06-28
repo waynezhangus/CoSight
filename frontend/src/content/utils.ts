@@ -1,3 +1,5 @@
+import { userUpdate } from "../background/api";
+
 function getVideoId(url) {
   const urlObject = new URL(url);
   const pathname = urlObject.pathname;
@@ -24,7 +26,7 @@ function secondToStamp(time) {
 // Extract timestamps from a comment
 // Assume the videos do not exceed 1 hour
 function extractTimestamp(comment) {
-  return comment.match(/[0-5]?[0-9]:[0-5][0-9]/g);
+  return comment.match(/\b[0-5]?\d:[0-5]\d\b/g);
 }
 
 function waitForPromise(selector: string, parent: Element) {
@@ -47,10 +49,37 @@ function waitForPromise(selector: string, parent: Element) {
   })
 }
 
+function feedBack(videoId, title, name, value) {
+  chrome.storage.sync.get('user', ({user}) => {
+    if (user.statistics) {
+      const vIndex = user.statistics.findIndex(v => v.videoId == videoId)
+      if (vIndex != -1) {
+        user.statistics[vIndex][name] = user.statistics[vIndex][name]
+                                        ? [...user.statistics[vIndex][name], value]
+                                        : [value]
+      } else {
+        user.statistics.push({
+          videoId, 
+          title,
+          [name]: [value],
+        })
+      }
+      chrome.storage.sync.set({user})
+      userUpdate({
+        statistics: user.statistics,
+        token: user.token,
+      })
+    } else {
+      console.log('Please sign in')
+    }
+  })
+}
+
 export {
   getVideoId,
   waitForPromise,
   stampToSecond,
   secondToStamp,
   extractTimestamp,
+  feedBack,
 };

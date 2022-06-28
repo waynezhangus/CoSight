@@ -1,20 +1,27 @@
 import { LocalStorageUser, LocalStorageVideo } from "./storage"
 
-const API_URL = 'http://localhost:5000/api/'
+const API_URL = 'https://cosight.herokuapp.com/api/'
 
 interface VideoData {
   videoId: string
-  ccKeywords?: {
+  title: string
+  captions?: {
+    _id: string
+    start: number
+    dur: number
     text: string
-    timestamps: string[]
+    keywords: string[]
   }[]
   comments?: {
+    _id: string
     text: string
-    likeCount: number
+    regLike: number
+    accLike: number
     timestamps: string[]
     keywords: string[]
   }[]
   blackRanges?: {
+    _id: string
     start: number,
     end: number,
     score: number,
@@ -29,18 +36,20 @@ async function getVideo(videoId: string): Promise<VideoData> {
     method: 'GET',
     mode: 'cors',
   })
+  const data: VideoData = await res.json();
   let video: LocalStorageVideo = {
     videoId,
+    title: data.title,
     status: 'null',
   }
   if (!res.ok) {
     chrome.storage.local.set({ video })
     return null;
+  } else {
+    video.status = 'available'
+    chrome.storage.local.set({ video })
+    return data; 
   }
-  video.status = 'available'
-  chrome.storage.local.set({ video })
-  const data: VideoData = await res.json();
-  return data; 
 }
 
 async function addVideo(videoId: string): Promise<VideoData> {
@@ -57,6 +66,40 @@ async function addVideo(videoId: string): Promise<VideoData> {
   }
   const data: VideoData = await res.json()
   return data
+}
+
+async function commentVote(videoId, commentId, payload) {
+  const res = await fetch(`${API_URL}youtube/${videoId}/comment/vote`, {
+    method: 'PATCH',
+    mode: 'cors',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({commentId, payload})
+  })
+  if (!res.ok) {
+    throw new Error('Video not found')
+  }
+  // const data: VideoData = await res.json()
+  // return data
+  return null
+}
+
+async function rangeVisited(videoId, rangeId, payload) {
+  const res = await fetch(`${API_URL}youtube/${videoId}/range/visited`, {
+    method: 'PATCH',
+    mode: 'cors',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({rangeId, payload})
+  })
+  if (!res.ok) {
+    throw new Error('Video not found')
+  }
+  // const data: VideoData = await res.json()
+  // return data
+  return null
 }
 
 async function userLogin(form) {
@@ -115,6 +158,8 @@ export {
   VideoData,
   getVideo,
   addVideo,
+  commentVote,
+  rangeVisited,
   userLogin,
   userRegister,
   userUpdate,
