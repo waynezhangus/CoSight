@@ -95,7 +95,8 @@ async function userLogin(form) {
     body: JSON.stringify(form)
   })
   if (!res.ok) {
-    throw new Error('Login failed')
+    return null;
+    // throw new Error('Login failed')
   }
   const user: LocalStorageUser = await res.json()
   chrome.storage.sync.set({ user })
@@ -112,7 +113,8 @@ async function userRegister(form) {
     body: JSON.stringify(form)
   })
   if (!res.ok) {
-    throw new Error('Registration failed')
+    return null;
+    // throw new Error('Registration failed')
   }
   const user: LocalStorageUser = await res.json()
   chrome.storage.sync.set({ user })

@@ -2,28 +2,38 @@ import * as React from 'react'
 import { useNavigate, Link as RouterLink } from 'react-router-dom'
 import Footer from '../components/Footer'
 
-import Box from '@mui/material/Box'
-import Container from '@mui/material/Container'
-import Grid from '@mui/material/Grid'
-import Typography from '@mui/material/Typography'
-
+import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar'
+import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Checkbox from '@mui/material/Checkbox'
+import Container from '@mui/material/Container'
 import FormControlLabel from '@mui/material/FormControlLabel'
+import Grid from '@mui/material/Grid'
 import Link from '@mui/material/Link'
-import TextField from '@mui/material/TextField'
-
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
+import Slide from '@mui/material/Slide';
+import Snackbar from '@mui/material/Snackbar';
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
+
 import { userLogin } from '../../background/api'
 
 export default function Login() {
+  const [open, setOpen] = React.useState(false);
   const [formData, setFormData] = React.useState({
     email: '',
     password: '',
   })
 
   const navigate = useNavigate()
+
+  const handleClose: any = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setOpen(false);
+  }
 
   const onChange = e => {
     const {name, value} = e.target
@@ -32,12 +42,29 @@ export default function Login() {
 
   const onSubmit = async e => {
     e.preventDefault()
-    await userLogin(formData)
-    navigate('/')
+    const user = await userLogin(formData)
+    if (user) navigate('/')
+    else setOpen(true);
   }
 
   return (
     <Container component="main" maxWidth="xs">
+      <Snackbar
+        open={open}
+        autoHideDuration={4000}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        TransitionComponent={Slide}
+      >
+        <Alert 
+          onClose={handleClose} 
+          severity="error" 
+          elevation={6}
+          variant="filled"
+          sx={{ width: '100%' }}>
+          Failed to sign in.
+        </Alert>
+      </Snackbar>
       <Box
         sx={{
           marginTop: 8,
