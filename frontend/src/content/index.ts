@@ -1,4 +1,4 @@
-import { getVideo, rangeVisited } from '../background/api'
+import { getVideo } from '../background/api'
 import { feedBack, 
         extractTimestamp, 
         getVideoId, 
@@ -117,7 +117,6 @@ getVideo(videoId).then((videoData) => {
           card.querySelector('.reason-text').innerHTML = reason;
           if (prevSeg && user.visitedEnable) {
             prevSeg.hasVisited = true;
-            rangeVisited(videoId, prevSeg._id, true)
           }
         }
       } else {    
@@ -126,7 +125,6 @@ getVideo(videoId).then((videoData) => {
     } else {
       if (prevSeg && user.visitedEnable) {
         prevSeg.hasVisited = true;
-        rangeVisited(videoId, prevSeg._id, true)
       }
       if (tip) tip.style.display = 'none';
     }

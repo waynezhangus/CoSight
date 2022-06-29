@@ -66,29 +66,11 @@ const commentVote = asyncHandler( async (req, res) => {
     res.status(200).json(video);
   }
 })
-// @desc    Update comment like count
-// @route   PATCH /api/youtube/:id/range/visited
-// @access  Public
-const rangeVisited = asyncHandler( async (req, res) => {
-  const { rangeId, payload } = req.body
-  const video = await Video.findOneAndUpdate(
-    {videoId: req.params.id},
-    {$set: {'blackRanges.$[range].hasVisited': payload}}, 
-    {new: true, 'arrayFilters': [{'range._id': rangeId}]}
-  )
-  if (!video) {
-    res.status(404);
-    throw new Error('Video not found');
-  } else {
-    res.status(200).json(video);
-  }
-})
 
 const videoCtrl = {
   addVideo,
   getVideo,
   commentVote,
-  rangeVisited
 }
 
 module.exports = videoCtrl

@@ -85,23 +85,6 @@ async function commentVote(videoId, commentId, payload) {
   return null
 }
 
-async function rangeVisited(videoId, rangeId, payload) {
-  const res = await fetch(`${API_URL}youtube/${videoId}/range/visited`, {
-    method: 'PATCH',
-    mode: 'cors',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({rangeId, payload})
-  })
-  if (!res.ok) {
-    throw new Error('Video not found')
-  }
-  // const data: VideoData = await res.json()
-  // return data
-  return null
-}
-
 async function userLogin(form) {
   const res = await fetch(`${API_URL}users/login`, {
     method: 'POST',
@@ -112,7 +95,8 @@ async function userLogin(form) {
     body: JSON.stringify(form)
   })
   if (!res.ok) {
-    throw new Error('Login failed')
+    return null;
+    // throw new Error('Login failed')
   }
   const user: LocalStorageUser = await res.json()
   chrome.storage.sync.set({ user })
@@ -129,7 +113,8 @@ async function userRegister(form) {
     body: JSON.stringify(form)
   })
   if (!res.ok) {
-    throw new Error('Registration failed')
+    return null;
+    // throw new Error('Registration failed')
   }
   const user: LocalStorageUser = await res.json()
   chrome.storage.sync.set({ user })
@@ -159,7 +144,6 @@ export {
   getVideo,
   addVideo,
   commentVote,
-  rangeVisited,
   userLogin,
   userRegister,
   userUpdate,

@@ -13,7 +13,4 @@ router.route('/:id')
 router.route('/:id/comment/vote')
   .patch(videoCtrl.commentVote)
 
-router.route('/:id/range/visited')
-  .patch(videoCtrl.rangeVisited)
-
 module.exports = router

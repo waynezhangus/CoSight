@@ -21,7 +21,6 @@
   "background": {
     "service_worker": "background.js"
   },
-  "host_permissions": ["https://localhost:5000/api/*"],
   "content_scripts": [
     {
       "matches": [

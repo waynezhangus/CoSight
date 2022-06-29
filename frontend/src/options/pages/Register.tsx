@@ -2,22 +2,25 @@ import * as React from 'react'
 import { useNavigate, Link as RouterLink } from 'react-router-dom'
 import Footer from '../components/Footer'
 
-import Box from '@mui/material/Box'
-import Container from '@mui/material/Container'
-import Grid from '@mui/material/Grid'
-import Typography from '@mui/material/Typography'
-
+import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar'
+import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Checkbox from '@mui/material/Checkbox'
+import Container from '@mui/material/Container'
 import FormControlLabel from '@mui/material/FormControlLabel'
+import Grid from '@mui/material/Grid'
 import Link from '@mui/material/Link'
-import TextField from '@mui/material/TextField'
-
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
+import Slide from '@mui/material/Slide';
+import Snackbar from '@mui/material/Snackbar';
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
+
 import { userRegister } from '../../background/api'
 
 export default function Register() {
+  const [open, setOpen] = React.useState(false);
   const [formData, setFormData] = React.useState({
     name: '',
     email: '',
@@ -27,6 +30,13 @@ export default function Register() {
 
   const navigate = useNavigate()
 
+  const handleClose: any = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setOpen(false);
+  }
+
   const onChange = e => {
     const {name, value} = e.target
     setFormData({...formData, [name]:value})
@@ -35,15 +45,32 @@ export default function Register() {
   const onSubmit = async e => {
     e.preventDefault()
     if (formData.password !== formData.password2) {
-      //toast.error('Passwords do not match')
-    } else {
-      await userRegister(formData)
-      navigate('/')
+      setOpen(true);
+      return;
     }
+    const user = await userRegister(formData)
+    if (user) navigate('/')
+    else setOpen(true);
   }
 
   return (
     <Container component="main" maxWidth="xs">
+      <Snackbar
+        open={open}
+        autoHideDuration={4000}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        TransitionComponent={Slide}
+      >
+        <Alert 
+          onClose={handleClose} 
+          severity="error" 
+          elevation={6}
+          variant="filled"
+          sx={{ width: '100%' }}>
+          Failed to sign up.
+        </Alert>
+      </Snackbar>
       <Box
         sx={{
           marginTop: 8,
@@ -56,7 +83,7 @@ export default function Register() {
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Sign in
+          Sign up
         </Typography>
         <Box sx={{ mt: 3 }} component="form" onSubmit={onSubmit} noValidate>
           <Grid container spacing={0.5}>
