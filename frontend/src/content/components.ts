@@ -66,16 +66,30 @@ function createFloatCard (start, end, reason, videoId, videoTitle) {
   function handleClick(event) {
     const zoom = videoContainer.querySelector<HTMLElement>('.ytp-fullscreen-button');
     if(zoom.getAttribute('title') === 'Exit full screen (f)') zoom.click();
-    document.querySelector<HTMLElement>('#chevron').click();
-    waitForPromise('#secondary #placeholder-area', document.body).then(holder => holder.click());
-    waitForPromise('#secondary #contenteditable-root', document.body).then(edit => {
-      edit.append(' ' + secondToStamp(video.currentTime))
-      edit.focus();
-    });
-    feedBack(videoId, videoTitle, 'iconStamps', secondToStamp(video.currentTime))
-    setTimeout(() => { 
-      window.scroll(0, 0); 
-    }, 1000);
+    const chevron = document.querySelector<HTMLElement>('#chevron');
+    if (chevron) {
+      chevron.click();
+      waitForPromise('#secondary #placeholder-area', document.body).then(holder => holder.click());
+      waitForPromise('#secondary #contenteditable-root', document.body).then(edit => {
+        edit.append(' ' + secondToStamp(video.currentTime))
+        edit.focus();
+      });
+      feedBack(videoId, videoTitle, 'iconStamps', secondToStamp(video.currentTime))
+      setTimeout(() => { 
+        window.scroll(0, 0); 
+      }, 1000);
+    } else {
+      waitForPromise('#primary #placeholder-area', document.body).then(holder => holder.click());
+      waitForPromise('#primary #contenteditable-root', document.body).then(edit => {
+        edit.append(' ' + secondToStamp(video.currentTime))
+        edit.focus();
+      });
+      feedBack(videoId, videoTitle, 'iconStamps', secondToStamp(video.currentTime))
+      setTimeout(() => { 
+        window.scroll(0, 600); 
+      }, 1000);
+    }
+    
   }
 
   function handleHover(event) {
