@@ -17,6 +17,10 @@ const userSchema = mongoose.Schema(
       required: true,
       default: false,
     },
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
     pauseEnable: {
       type: Boolean,
       default: false,

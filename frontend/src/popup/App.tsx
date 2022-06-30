@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { LocalStorageVideo } from '../background/storage';
+import { LocalStorageUser, LocalStorageVideo } from '../background/storage';
 import { addVideo } from '../background/api';
 
 import Alert from '@mui/material/Alert';
@@ -12,11 +12,13 @@ import Container from '@mui/material/Container'
 
 export default function App()
 {
+  const [user, setUser] = React.useState<LocalStorageUser | null>(null)
   const [video, setVideo] = React.useState<LocalStorageVideo | null>(null)
   const [loading, setLoading] = React.useState(false)
 
   React.useEffect(() => {
     chrome.storage.local.get('video', data => setVideo(data.video));
+    chrome.storage.sync.get('user', (data) => setUser(data.user));
   }, [])
 
   const videoFound = video?.status == 'available' ? true : false;
@@ -42,7 +44,7 @@ export default function App()
               sx={{ mt: 3, mb: 2 }}
               variant="contained" 
               color="inherit"
-              disabled={true} 
+              disabled={!(user?.isAdmin)} 
               onClick={onClick}>
               {videoFound ? <CheckIcon /> : 'Request'}
             </Button>

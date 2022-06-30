@@ -15,6 +15,7 @@ interface LocalStorageUser {
   email?: string
   token?: string
   mode: boolean
+  isAdmin?: boolean
   pauseEnable?: boolean
   visitedEnable?: boolean
   statistics?: {

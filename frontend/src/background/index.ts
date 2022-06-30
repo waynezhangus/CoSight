@@ -7,6 +7,7 @@ import { LocalStorageUser, LocalStorageVideo } from './storage';
 
 let user: LocalStorageUser = {
   mode: false,
+  isAdmin: false,
   pauseEnable: false,
   visitedEnable: false,
 };
