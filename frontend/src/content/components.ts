@@ -457,7 +457,7 @@ function createAccordion(commentsTimed, parent) {
     .accordion>.accordion-body {
       padding: 0px 30px 10px;
       background-color: white;
-      display: block;
+      display: none;
       overflow: hidden;
     }
 
@@ -475,7 +475,6 @@ function createAccordion(commentsTimed, parent) {
 
   const accordionButton = document.createElement('button');
   accordionButton.classList.add("accordion-button");
-  accordionButton.classList.add("active");
   accordionButton.append("Accessible Comments");
 
   const accordionBody = document.createElement('div');
@@ -532,10 +531,10 @@ function createAccordion(commentsTimed, parent) {
 
       /* Toggle between hiding and showing the active panel */
       var panel = this.nextElementSibling;
-      if (panel.style.display === "none") {
-        panel.style.display = "block";
-      } else {
+      if (panel.style.display === "block") {
         panel.style.display = "none";
+      } else {
+        panel.style.display = "block";
       }
     });
   }
