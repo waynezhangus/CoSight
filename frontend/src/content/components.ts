@@ -494,14 +494,14 @@ function createAccordion(commentsTimed, parent) {
   const accordionBody = document.createElement('div');
   accordionBody.classList.add("accordion-body");
 
+  commentsTimed = commentsTimed.filter(comment => comment.score > 0.7)
+
   // collect all the timestamps
   let allTimestamps = [];
   commentsTimed.forEach(comment => {
-    comment.timestamps.forEach(timestamp => {
-      if (!allTimestamps.includes(timestamp)) {
-        allTimestamps.push(timestamp);
-      }
-    })
+    if (!allTimestamps.includes(comment.timestamps[0])) {
+      allTimestamps.push(comment.timestamps[0]);
+    }
   })
 
   // sort these timestamps
@@ -514,7 +514,13 @@ function createAccordion(commentsTimed, parent) {
     timeHeader.append(timestamp);
     const commentList = document.createElement('ul');
     commentList.classList.add('comment-list');
-    commentList.setAttribute('id', 'timestamp-' + timestamp);
+    const comments = commentsTimed.filter(comment => comment.timestamps[0] == timestamp)
+    comments.forEach(comment => {
+      const accordionComment = document.createElement('li');
+      accordionComment.classList.add('accordion-comment');
+      accordionComment.append(comment.text);
+      commentList.append(accordionComment);
+    })
     accordionBody.append(timeHeader, commentList);
   })
 
@@ -523,17 +529,6 @@ function createAccordion(commentsTimed, parent) {
   accordion.append(accordionButton, accordionBody);
 
   parent.insertAdjacentElement('beforebegin', accordion);
-
-  // add all the comments
-  commentsTimed.forEach(comment => {
-    comment.timestamps.forEach(timestamp => {
-      const accordionComment = document.createElement('li');
-      accordionComment.classList.add('accordion-comment');
-      accordionComment.append(comment.text);
-      const commentList = document.getElementById('timestamp-' + timestamp);
-      commentList.append(accordionComment);
-    })
-  })
 
   // add interactions
   let acc = document.getElementsByClassName("accordion-button");

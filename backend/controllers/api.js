@@ -3,7 +3,7 @@ const keyword_extractor = require("keyword-extractor");
 const axios = require('axios');
 const Video = require('../models/videoModel');
 
-const DDLSwitch = false
+const HFSwitch = true
 const keywordOptions = {
   language:"english",
   remove_digits: true,
@@ -30,7 +30,8 @@ async function getTitle(videoId) {
 
 async function getCaptions(videoId) {
   let captions = await getSubtitles({ videoID: videoId });
-  captionString = captions.reduce((sum, cur) => sum + cur['text'] + ' ', '');
+  captionString = captions.reduce((sum, cur) => sum + cur['text'], '');
+  captionString = captionString.replace(/(\r\n|\n|\r)/gm, "");
 
   captions = captions.map(caption => ({
     ...caption,
@@ -76,27 +77,35 @@ async function getComments(videoId) {
 
   let commentsTimed = allComments.filter(comment => Boolean(comment['timestamps']))
   
-  commentsTimed = await Promise.all(commentsTimed.map(async (comment) => {
-    let response
-    if (DDLSwitch) {
-      try {
-        response = await axios.get(process.env.DDL_URL, {
-          params: {
-            token: process.env.DDL_TOKEN,
-            text1: captionString,
-            text2: comment.text
-          }
-        })
-      } catch (error) {
-        throw new Error(error);
+  commentsTimed = commentsTimed.map(comment => ({
+    ...comment,
+    accLike: 0,
+    keywords: keyword_extractor.extract(comment.text, keywordOptions),
+  }))
+
+  const payload = commentsTimed.map(comment => comment.text)
+
+  let response
+  if (HFSwitch) {
+    try {
+      const config = {
+        headers: { Authorization: `Bearer ${process.env.HF_TOKEN}` }
+      };
+      const body = {
+        inputs: {
+          source_sentence: captionString,
+          sentences: payload,
+        }
       }
+      response = await axios.post(process.env.HF_URL, body, config)
+    } catch (error) {
+      throw new Error(error);
     }
-    return ({
-      ...comment,
-      accLike: 0,
-      score: response?.data?.similarity ?? 0,
-      keywords: keyword_extractor.extract(comment.text, keywordOptions),
-    })
+  }
+
+  commentsTimed = commentsTimed.map((comment, index) => ({
+    ...comment,
+    score: response.data[index]
   }))
 
   const video = await Video.findOne({ videoId })
