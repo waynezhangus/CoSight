@@ -17,16 +17,17 @@ interface VideoData {
     text: string
     regLike: number
     accLike: number
+    score: number
     timestamps: string[]
     keywords: string[]
   }[]
   blackRanges?: {
     _id: string
-    start: number,
-    end: number,
-    score: number,
-    hasVisited: boolean,
-    reason: string,
+    start: number
+    end: number
+    score: number
+    hasVisited: boolean
+    reason: string
   }[]
   status: 'null' | 'processing' | 'available'
 }
