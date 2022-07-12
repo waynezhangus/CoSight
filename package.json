@@ -25,6 +25,7 @@
     "mongoose": "^6.2.10",
     "morgan": "^1.10.0",
     "throng": "^5.0.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.18.9/xlsx-0.18.9.tgz",
     "youtube-captions-scraper": "^2.0.0"
   },
   "devDependencies": {

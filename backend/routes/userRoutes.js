@@ -1,6 +1,6 @@
 const express = require('express')
 const userCtrl = require('../controllers/userCtrl')
-const { protect } = require('../middleware/authMid')
+const {protect} = require('../middleware/authMid')
 
 const router = express.Router()
 
@@ -10,5 +10,7 @@ router.post('/', userCtrl.registerUser)
 router.post('/login', userCtrl.loginUser)
 // Update user
 router.patch('/update', protect, userCtrl.updateUser)
+// Get User
+router.get('/comments', userCtrl.userComments)
 
 module.exports = router
