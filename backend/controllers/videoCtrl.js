@@ -57,6 +57,7 @@ const getVideo = asyncHandler(async (req, res) => {
         )
         if (userData?.userComments) userComments.push(...userData.userComments)
       })
+      console.log(userComments)
       const newComments = []
       video.comments.forEach((comment) => {
         if (userComments.find((userComment) => userComment == comment.text)) {
